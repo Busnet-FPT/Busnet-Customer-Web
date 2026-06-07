@@ -1,1 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
+
+@theme {
+    /* Overriding the default sans font so the whole site defaults to Roboto */
+    --font-sans: 'Roboto', sans-serif;
+
+    /* Font Families */
+    --font-primary: 'Montserrat', sans-serif;
+    /* Dùng cho Tiêu đề, Button, Brand */
+    --font-secondary: 'Roboto', sans-serif;
+    /* Dùng cho Văn bản, Mô tả, Menu */
+
+    /* Font Weights */
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+
+    /* Font Sizes & Line Heights (Hệ thống REM - Gốc 1rem = 16px) */
+    --text-display: 2.5rem;
+    /* 40px - Dùng cho Banner lớn / Hero Section */
+    --text-h1: 2.0rem;
+    /* 32px - Tiêu đề chính trang */
+    --text-h2: 1.5rem;
+    /* 24px - Tiêu đề mục lớn */
+    --text-h3: 1.25rem;
+    /* 20px - Tiêu đề mục nhỏ */
+    --text-body: 1.0rem;
+    /* 16px - Văn bản nội dung chính */
+    --text-button: 0.9375rem;
+    /* 15px - Chữ trong nút bấm */
+    --text-small: 0.875rem;
+    /* 14px - Chữ phụ, chú thích, phụ đề */
+    --text-xs: 0.75rem;
+    /* 12px - Chữ rất nhỏ, Nhãn số xe, Giờ chạy */
+
+    /* Line Heights (Chiều cao dòng để tối ưu đọc văn bản) */
+    --leading-heading: 1.3;
+    --leading-body: 1.6;
+    --leading-tight: 1.15;
+
+    /* Colors from design system */
+    --color-primary: #0185FF;
+    --color-bg-light: #F8F9FA;
+    --color-text-main: #212529;
+    --color-text-muted: #6C757D;
+    --color-white: #FFFFFF;
+
+    /* Custom Animations */
+    --animate-spin-slow: spin 20s linear infinite;
+    --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    --animate-fade-in: fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+/* Base styles to apply the custom fonts and sizes by default */
+body {
+    font-family: var(--font-secondary);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-primary);
+    line-height: var(--leading-heading);
+}
+
+button {
+    font-family: var(--font-primary);
+}
