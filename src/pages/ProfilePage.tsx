@@ -1,12 +1,12 @@
-function BookingPage() {
+function ProfilePage() {
   return (
     <section>
-      <h1 className="text-2xl font-bold">Vé của tôi</h1>
+      <h1 className="text-2xl font-bold">My Profile</h1>
       <p className="mt-2 text-slate-600">
-        Trang này dùng để xem booking, vé đã đặt và trạng thái thanh toán.
+        This page is used to view profile.
       </p>
     </section>
   )
 }
 
-export default BookingPage
+export default ProfilePage

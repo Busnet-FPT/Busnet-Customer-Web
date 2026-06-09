@@ -13,61 +13,61 @@ function Footer() {
                                 alt="BusNet Logo"
                                 className="h-10 w-10 object-cover rounded-xl border border-slate-700 shadow-md"
                             />
-                            <span className="text-2xl font-extrabold text-white tracking-tight uppercase">
+                            <span className="brand-logo text-white">
                                 Bus<span className="text-primary">Net</span>
                             </span>
                         </Link>
                         <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
-                            Hệ thống đặt vé xe khách công nghệ hàng đầu Việt Nam. Kết nối nhanh chóng, đồng hành an toàn và tin cậy trên mọi chặng đường.
+                            Vietnam's leading technology-driven coach ticket booking platform. Connecting quickly, traveling safely and reliably on every journey.
                         </p>
                     </div>
 
-                    {/* Column 2: Về BusNet */}
+                    {/* Column 2: About BusNet */}
                     <div className="space-y-3">
                         <h4 className="text-sm font-bold uppercase tracking-wider text-white">
-                            Về BusNet
+                            About BusNet
                         </h4>
                         <ul className="space-y-2 text-xs text-slate-400">
                             <li>
-                                <Link to="/about" className="hover:text-primary transition-colors">Giới thiệu công ty</Link>
+                                <Link to="/about" className="hover:text-primary transition-colors">About Company</Link>
                             </li>
                             <li>
-                                <Link to="/news" className="hover:text-primary transition-colors">Tin tức & Sự kiện</Link>
+                                <Link to="/news" className="hover:text-primary transition-colors">News & Events</Link>
                             </li>
                             <li>
-                                <Link to="/careers" className="hover:text-primary transition-colors">Tuyển dụng</Link>
+                                <Link to="/careers" className="hover:text-primary transition-colors">Careers</Link>
                             </li>
                             <li>
-                                <Link to="/contact" className="hover:text-primary transition-colors">Liên hệ</Link>
+                                <Link to="/contact" className="hover:text-primary transition-colors">Contact</Link>
                             </li>
                         </ul>
                     </div>
 
-                    {/* Column 3: Hỗ trợ */}
+                    {/* Column 3: Policy & Support */}
                     <div className="space-y-3">
                         <h4 className="text-sm font-bold uppercase tracking-wider text-white">
-                            Chính sách & Hỗ trợ
+                            Policy & Support
                         </h4>
                         <ul className="space-y-2 text-xs text-slate-400">
                             <li>
-                                <Link to="/rules" className="hover:text-primary transition-colors">Quy chế hoạt động</Link>
+                                <Link to="/rules" className="hover:text-primary transition-colors">Operating Rules</Link>
                             </li>
                             <li>
-                                <Link to="/privacy" className="hover:text-primary transition-colors">Chính sách bảo mật</Link>
+                                <Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
                             </li>
                             <li>
-                                <Link to="/terms" className="hover:text-primary transition-colors">Điều khoản sử dụng</Link>
+                                <Link to="/terms" className="hover:text-primary transition-colors">Terms of Use</Link>
                             </li>
                             <li>
-                                <Link to="/faq" className="hover:text-primary transition-colors">Câu hỏi thường gặp (FAQ)</Link>
+                                <Link to="/faq" className="hover:text-primary transition-colors">FAQs</Link>
                             </li>
                         </ul>
                     </div>
 
-                    {/* Column 4: Liên hệ */}
+                    {/* Column 4: Contact Info */}
                     <div className="space-y-3">
                         <h4 className="text-sm font-bold uppercase tracking-wider text-white">
-                            Thông tin liên hệ
+                            Contact Info
                         </h4>
                         <div className="space-y-2 text-xs text-slate-400">
                             <p className="flex items-center gap-2">
@@ -87,7 +87,7 @@ function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                <span>600 Nguyễn Văn Cừ Nối Dài, An Bình, Cần Thơ</span>
+                                <span>600 Nguyen Van Cu Extended, An Binh, Can Tho</span>
                             </p>
                         </div>
                     </div>
