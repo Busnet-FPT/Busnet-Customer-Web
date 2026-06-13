@@ -8,16 +8,34 @@ function Header() {
     const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false)
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
     const [user, setUser] = useState<any>(null)
+    const [isScrolled, setIsScrolled] = useState(false)
 
     const langDropdownRef = useRef<HTMLDivElement>(null)
     const userDropdownRef = useRef<HTMLDivElement>(null)
 
     const navLinks = [
         { name: 'Home', path: '/' },
-        { name: 'Find Trips', path: '/trips' },
-        { name: 'My Tickets', path: '/booking' },
-        { name: 'Subscription', path: '/subscription' }
+        { name: 'Trip', path: '/trips' },
+        { name: 'Booking', path: '/booking' },
+        { name: 'Subscription', path: '/subscription' },
+        { name: 'Blog', path: '/blog' }
     ]
+
+    // Monitor scroll position for transparent header
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 20) {
+                setIsScrolled(true)
+            } else {
+                setIsScrolled(false)
+            }
+        }
+        handleScroll()
+        window.addEventListener('scroll', handleScroll)
+        return () => window.removeEventListener('scroll', handleScroll)
+    }, [])
+
+    const isTransparent = location.pathname === '/' && !isScrolled
 
     // Load user profile and monitor pathname changes
     useEffect(() => {
@@ -58,16 +76,21 @@ function Header() {
     }
 
     return (
-        <header className="sticky top-0 z-50 backdrop-blur-md bg-white/90 border-b border-slate-100 shadow-sm">
+        <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 font-primary ${isTransparent
+            ? 'bg-transparent border-b border-transparent shadow-none'
+            : 'backdrop-blur-md bg-white/90 border-b border-slate-100 shadow-sm'
+            }`}>
             <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
                 {/* Brand Logo & Name */}
                 <Link to="/" className="flex items-center gap-3 group">
                     <img
-                        src="/logo.jpg"
+                        src="/images/logo.jpg"
                         alt="BusNet Logo"
-                        className="h-9 w-9 object-cover rounded-xl shadow-md border border-slate-100 group-hover:scale-105 transition-transform duration-300"
+                        className={`h-9 w-9 object-cover rounded-xl shadow-md border transition-all duration-300 group-hover:scale-105 ${isTransparent ? 'border-white/10' : 'border-slate-100'
+                            }`}
                     />
-                    <span className="brand-logo text-slate-900 group-hover:text-primary transition-colors duration-300">
+                    <span className={`brand-logo transition-colors duration-300 ${isTransparent ? 'text-white' : 'text-slate-900'
+                        }`}>
                         Bus<span className="text-primary">Net</span>
                     </span>
                 </Link>
@@ -80,8 +103,11 @@ function Header() {
                             <Link
                                 key={link.path}
                                 to={link.path}
-                                className={`relative py-1 transition-colors duration-300 ${isActive ? 'text-primary' : 'text-slate-600 hover:text-primary'
-                                    } after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-primary after:transition-all after:duration-300 ${isActive ? 'after:w-full' : 'after:w-0 hover:after:w-full'
+                                className={`relative py-1 transition-colors duration-300 ${isActive
+                                    ? (isTransparent ? 'text-white font-bold' : 'text-primary')
+                                    : (isTransparent ? 'text-white/75 hover:text-white' : 'text-slate-600 hover:text-primary')
+                                    } after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-0.5 ${isTransparent ? 'after:bg-white' : 'after:bg-primary'
+                                    } after:transition-all after:duration-300 ${isActive ? 'after:w-full' : 'after:w-0 hover:after:w-full'
                                     }`}
                             >
                                 {link.name}
@@ -96,24 +122,27 @@ function Header() {
                     <div className="relative" ref={langDropdownRef}>
                         <button
                             onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all duration-200 text-xs font-bold text-slate-700 font-primary active:scale-[0.97] cursor-pointer"
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all duration-200 text-xs font-bold font-primary active:scale-[0.97] cursor-pointer ${isTransparent
+                                ? 'border-white/20 bg-white/10 hover:bg-white/20 text-white'
+                                : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                                }`}
                         >
                             <span className="flex items-center gap-1.5">
                                 {lang === 'VI' ? (
                                     <>
                                         <span className="text-sm leading-none">🇻🇳</span>
-                                        <span>Tiếng Việt</span>
+                                        <span>Vietnamese</span>
                                     </>
                                 ) : (
                                     <>
-                                        <span className="text-sm leading-none">🇬🇧</span>
+                                        <span className="text-sm leading-none">🇺🇸</span>
                                         <span>English</span>
                                     </>
                                 )}
                             </span>
                             <svg
-                                className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${isLangDropdownOpen ? 'rotate-180' : ''
-                                    }`}
+                                className={`w-3 h-3 transition-transform duration-200 ${isLangDropdownOpen ? 'rotate-180' : ''
+                                    } ${isTransparent ? 'text-white/80' : 'text-slate-400'}`}
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -152,7 +181,8 @@ function Header() {
                     </div>
 
                     {/* Divider */}
-                    <span className="h-5 w-px bg-slate-200 hidden sm:inline-block"></span>
+                    <span className={`h-5 w-px hidden sm:inline-block transition-colors duration-300 ${isTransparent ? 'bg-white/20' : 'bg-slate-200'
+                        }`}></span>
 
                     {/* Login Button or Avatar Dropdown */}
                     {user ? (
@@ -165,11 +195,15 @@ function Header() {
                                     <img
                                         src={user.profilePicture}
                                         alt={user.fullName}
-                                        className="w-9 h-9 rounded-full object-cover border border-slate-200 group-hover:border-primary transition-all duration-300"
+                                        className={`w-9 h-9 rounded-full object-cover border transition-all duration-300 ${isTransparent ? 'border-white/30 group-hover:border-white' : 'border-slate-200 group-hover:border-primary'
+                                            }`}
                                         referrerPolicy="no-referrer"
                                     />
                                 ) : (
-                                    <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm border border-slate-200 group-hover:border-primary transition-all duration-300">
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 ${isTransparent
+                                        ? 'bg-white/10 text-white border-white/20 group-hover:border-white'
+                                        : 'bg-primary/10 text-primary border-slate-200 group-hover:border-primary'
+                                        }`}>
                                         {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
                                     </div>
                                 )}
@@ -217,7 +251,10 @@ function Header() {
                     ) : (
                         <Link
                             to="/login"
-                            className="btn-primary rounded-xl px-5 py-2.5 shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/30 active:scale-[0.98] inline-block text-center"
+                            className={`rounded-xl px-5 py-2 text-xs font-bold font-primary transition-all duration-300 active:scale-[0.97] inline-block text-center cursor-pointer ${isTransparent
+                                ? 'border border-white/30 text-white bg-white/5 hover:bg-white hover:text-slate-900 hover:border-white shadow-none'
+                                : 'bg-primary text-white hover:bg-blue-600 shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/25'
+                                }`}
                         >
                             Sign In
                         </Link>

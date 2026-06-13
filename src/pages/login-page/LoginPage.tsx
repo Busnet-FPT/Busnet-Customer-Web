@@ -1,3 +1,4 @@
+// Reading this as: Login interface for transit passengers and operators, with a clean premium tech vibe, leaning toward modern card splits, glassmorphic accents, and fluid-mesh gradient side panels.
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { loginWithGoogle } from '../../services/authService'
@@ -110,7 +111,7 @@ function LoginPage() {
             {/* Brand Logo Image */}
             <div className="flex shrink-0">
               <img
-                src="/logo.jpg"
+                src="/images/logo.jpg"
                 alt="BusNet Logo"
                 className="w-9 h-9 object-cover rounded-xl shadow-md border border-slate-100"
               />
@@ -123,12 +124,12 @@ function LoginPage() {
           <div className="max-w-xs w-full mx-auto my-auto space-y-6">
 
             <div className="text-center space-y-1">
-              <h2 className="text-[20px] text-slate-900 font-extrabold uppercase tracking-wide">SIGN IN</h2>
-              <p className="text-slate-400 text-[14px] font-secondary">Enter your username and password</p>
+              <h1 className="text-[16px] text-slate-900 font-extrabold uppercase tracking-wide">SIGN IN</h1>
+              <p className="text-slate-400 text-[13px] font-secondary">Enter your username and password</p>
             </div>
 
             {apiError && (
-              <div className="p-2.5 rounded-xl bg-red-50 border border-red-100 text-red-600 text-[14px] font-secondary flex items-center gap-2">
+              <div className="p-2.5 rounded-xl bg-red-50 border border-red-100 text-red-600 text-[14px] font-secondary flex items-center gap-2" role="alert">
                 <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -138,43 +139,59 @@ function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Input */}
-              <div className="space-y-1">
+              <div className="space-y-1.5 text-left w-full">
+                <label htmlFor="email" className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">
+                  Username or Email
+                </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-450 group-focus-within:text-primary transition-colors">
                     <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
                   <input
+                    id="email"
                     type="email"
-                    placeholder="Username or email"
+                    placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className={`w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 ${errors.email ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                    autoComplete="email"
                   />
                 </div>
-                {errors.email && <p className="text-red-500 text-[14px] pl-4 font-secondary mt-0.5">{errors.email}</p>}
+                {errors.email && <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.email}</p>}
               </div>
 
               {/* Password Input */}
-              <div className="space-y-1">
+              <div className="space-y-1.5 text-left w-full">
+                <div className="flex justify-between items-center">
+                  <label htmlFor="password" className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">
+                    Password
+                  </label>
+                  <a href="/forgot-password" className="text-[11px] font-extrabold text-slate-500 hover:text-primary hover:underline font-primary uppercase tracking-wider">
+                    Forgot password?
+                  </a>
+                </div>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-450 group-focus-within:text-primary transition-colors">
                     <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
                   <input
+                    id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Password"
+                    placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className={`w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-10 py-2.5 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 ${errors.password ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-650 focus:outline-none cursor-pointer"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
                       <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -188,41 +205,38 @@ function LoginPage() {
                     )}
                   </button>
                 </div>
-                {errors.password && <p className="text-red-500 text-[14px] pl-4 font-secondary mt-0.5">{errors.password}</p>}
+                {errors.password && <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.password}</p>}
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-2.5 rounded-full btn-premium-gradient py-2.5 text-[14px] active:scale-[0.98] transition-all duration-300 disabled:opacity-75 cursor-pointer"
+                className="w-full mt-2.5 rounded-full btn-premium-gradient py-2.5 text-[14px] active:scale-[0.98] transition-all duration-300 disabled:opacity-75 cursor-pointer shadow-md hover:shadow-lg shadow-primary/20 hover:shadow-primary/30"
               >
                 {isLoading ? 'SIGNING IN...' : 'LOGIN'}
               </button>
 
               <div className="flex items-center my-3">
                 <div className="flex-1 border-t border-slate-200"></div>
-                <span className="px-3 text-slate-400 text-xs uppercase font-bold tracking-wider">Or</span>
+                <span className="px-3 text-slate-400 text-[10px] uppercase font-bold tracking-widest">Or</span>
                 <div className="flex-1 border-t border-slate-200"></div>
               </div>
 
               {/* Google Sign-in Container */}
-              <div id="googleBtn" className="w-full flex justify-center"></div>
+              <div id="googleBtn" className="w-full flex justify-center min-h-[44px]">Login with Google</div>
 
-              {/* Remember me & Forgot password */}
-              <div className="flex items-center justify-between px-2">
-                <label className="flex items-center gap-1.5 cursor-pointer select-none">
+              {/* Remember me Checkbox */}
+              <div className="flex items-center justify-start px-1 pt-1">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded-full text-primary focus:ring-primary/20 border-slate-300 transition-colors"
+                    className="w-4 h-4 rounded text-primary focus:ring-primary/20 border-slate-300 transition-colors"
                   />
-                  <span className="text-[14px] text-slate-500 font-semibold font-secondary">Remember me</span>
+                  <span className="text-[13px] text-slate-500 font-medium font-secondary">Remember this device</span>
                 </label>
-                <a href="/forgot-password" className="text-[14px] font-bold text-slate-600 hover:text-primary hover:underline font-secondary">
-                  Forgot password?
-                </a>
               </div>
             </form>
           </div>
@@ -244,16 +258,16 @@ function LoginPage() {
             <Link to="/register" className="px-4 py-1.5 rounded-full border border-white/30 bg-white/10 hover:bg-white hover:text-slate-950 transition-all duration-300">SIGN UP</Link>
           </div>
 
-          {/* Welcome Message */}
-          <div className="my-auto max-w-sm space-y-3.5">
-            <h1 className="text-[22px] font-extrabold tracking-tight leading-none text-white animate-fade-in font-primary">
-              Welcome.
-            </h1>
-            <p className="text-white/70 text-[14px] leading-relaxed font-secondary">
+          {/* Welcome Message inside Glassmorphic panel */}
+          <div className="my-auto max-w-sm backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] space-y-4 animate-fade-in w-full text-left">
+            <h2 className="text-[22px] font-extrabold tracking-tight leading-none text-white font-primary">
+              Welcome back.
+            </h2>
+            <p className="text-white/85 text-[14px] leading-relaxed font-secondary">
               Connecting journeys, accompanying every road with premium transit tech experience. Join thousands of smart travelers.
             </p>
             <div className="pt-2 text-[14px] font-secondary">
-              <span className="text-white/60">Not a member? </span>
+              <span className="text-white/70">Not a member? </span>
               <Link to="/register" className="text-white font-bold hover:underline">
                 Sign up now
               </Link>
@@ -261,7 +275,7 @@ function LoginPage() {
           </div>
 
           {/* Footer Text */}
-          <div className="text-[14px] text-white/40 font-secondary">
+          <div className="text-[12px] text-white/40 font-secondary text-right">
             © 2026 BusNet Inc. All rights reserved.
           </div>
         </div>

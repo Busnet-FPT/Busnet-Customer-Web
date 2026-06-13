@@ -9,7 +9,9 @@ import TripsPage from '../pages/TripsPage'
 import BookingPage from '../pages/BookingPage'
 import ProfilePage from '../pages/ProfilePage'
 import NotFoundPage from '../pages/NotFoundPage'
-import SubscriptionPage from '../pages/SubscriptionPage'
+import SubscriptionPage from '../pages/subscription-page/SubscriptionPage'
+import BlogPage from '../pages/blog-page/BlogPage'
+import BlogDetailPage from '../pages/blog-page/blog-detail-page/BlogDetailPage'
 
 
 export const router = createBrowserRouter([
@@ -57,6 +59,14 @@ export const router = createBrowserRouter([
       {
         path: 'subscription',
         element: <SubscriptionPage />
+      },
+      {
+        path: 'blog',
+        element: <BlogPage />
+      },
+      {
+        path: 'blog/:id',
+        element: <BlogDetailPage />
       }
     ],
   },

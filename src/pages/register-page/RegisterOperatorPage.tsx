@@ -1,3 +1,4 @@
+// Reading this as: Operator registration page for transit operators, leaning toward clean form layouts with labels above inputs, tactile states, and glassmorphic welcome overlay.
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import registerHero from '../../assets/register_hero.png'
@@ -125,9 +126,8 @@ function RegisterOperatorPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </div>
-
-            <h1 className="text-[20px] font-extrabold text-slate-900 font-primary">Partner Registration Successful!</h1>
-            <p className="mt-3 text-[14px] text-slate-600 font-secondary max-w-sm leading-relaxed">
+            <div className="text-[18px] font-extrabold text-slate-900 font-primary">Partner Registration Successful!</div>
+            <p className="mt-3 text-[13px] text-slate-600 font-secondary max-w-sm leading-relaxed">
               Transit partner request for <strong className="text-slate-950 font-bold">{companyName}</strong> has been successfully submitted. Our team will verify details and contact you within 24 business hours.
             </p>
 
@@ -162,7 +162,7 @@ function RegisterOperatorPage() {
             {/* Brand Logo Image */}
             <div className="flex shrink-0">
               <img
-                src="/logo.jpg"
+                src="/images/logo.jpg"
                 alt="BusNet Logo"
                 className="w-9 h-9 object-cover rounded-xl shadow-md border border-slate-100"
               />
@@ -181,143 +181,162 @@ function RegisterOperatorPage() {
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
-            Back to selection
+            Back
           </button>
 
-          <div className="w-full mx-auto my-auto space-y-4">
-
-            {/* Round Avatar Icon Placeholder */}
-            <div className="mx-auto w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center bg-slate-50 text-slate-400">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
+          <div className="w-full max-w-sm mx-auto my-auto space-y-4">
 
             <div className="text-center space-y-1">
-              <h2 className="text-[20px] text-slate-900 font-extrabold uppercase tracking-wide">REGISTER OPERATOR</h2>
-              <p className="text-slate-400 text-[14px] font-secondary">Enter transit business profile details</p>
+              <h1 className="text-[16px] text-slate-900 font-extrabold uppercase tracking-wide">REGISTER OPERATOR</h1>
+              <p className="text-slate-400 text-[13px] font-secondary">Enter transit business profile details</p>
             </div>
-
             <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-left">
 
                 {/* Company Name */}
-                <div className="sm:col-span-2 space-y-1">
+                <div className="sm:col-span-2 space-y-1.5">
+                  <label htmlFor="companyName" className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">
+                    Company Name
+                  </label>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-405 group-focus-within:text-primary transition-colors">
                       <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                       </svg>
                     </div>
                     <input
+                      id="companyName"
                       type="text"
-                      placeholder="COMPANY / OPERATOR NAME"
+                      placeholder="BusNet Transit Ltd"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
-                      className={`w-full rounded-full border border-slate-300 bg-white pl-10 pr-4 py-2 text-[14px] uppercase font-bold tracking-wider outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 ${errors.companyName ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                      className={`w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 ${errors.companyName ? 'border-red-500 focus:ring-red-500/10' : ''}`}
                     />
                   </div>
-                  {errors.companyName && <p className="text-red-500 text-[14px] pl-4 font-secondary mt-0.5">{errors.companyName}</p>}
+                  {errors.companyName && <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.companyName}</p>}
                 </div>
 
                 {/* Representative Name */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
+                  <label htmlFor="representativeName" className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">
+                    Legal Representative
+                  </label>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-405 group-focus-within:text-primary transition-colors">
+                      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
                     <input
+                      id="representativeName"
                       type="text"
-                      placeholder="LEGAL REPRESENTATIVE"
+                      placeholder="John Doe"
                       value={representativeName}
                       onChange={(e) => setRepresentativeName(e.target.value)}
-                      className={`w-full rounded-full border border-slate-300 bg-white pl-10 pr-4 py-2 text-[14px] uppercase font-bold tracking-wider outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 ${errors.representativeName ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                      className={`w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 ${errors.representativeName ? 'border-red-500 focus:ring-red-500/10' : ''}`}
                     />
                   </div>
-                  {errors.representativeName && <p className="text-red-500 text-[14px] pl-4 font-secondary mt-0.5">{errors.representativeName}</p>}
+                  {errors.representativeName && <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.representativeName}</p>}
                 </div>
 
                 {/* Tax Code */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
+                  <label htmlFor="taxCode" className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">
+                    Tax Code / License ID
+                  </label>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-405 group-focus-within:text-primary transition-colors">
+                      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
                     <input
+                      id="taxCode"
                       type="text"
-                      placeholder="TAX CODE / LICENSE ID"
+                      placeholder="123456789"
                       value={taxCode}
                       onChange={(e) => setTaxCode(e.target.value)}
-                      className={`w-full rounded-full border border-slate-300 bg-white pl-10 pr-4 py-2 text-[14px] uppercase font-bold tracking-wider outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 ${errors.taxCode ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                      className={`w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 ${errors.taxCode ? 'border-red-500 focus:ring-red-500/10' : ''}`}
                     />
                   </div>
-                  {errors.taxCode && <p className="text-red-500 text-[14px] pl-4 font-secondary mt-0.5">{errors.taxCode}</p>}
+                  {errors.taxCode && <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.taxCode}</p>}
                 </div>
 
                 {/* Phone Number */}
-                <div className="sm:col-span-2 space-y-1">
+                <div className="sm:col-span-2 space-y-1.5">
+                  <label htmlFor="phone" className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">
+                    Phone Number
+                  </label>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-405 group-focus-within:text-primary transition-colors">
+                      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                     </div>
                     <input
+                      id="phone"
                       type="tel"
-                      placeholder="PHONE NUMBER"
+                      placeholder="0912345678"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className={`w-full rounded-full border border-slate-300 bg-white pl-10 pr-4 py-2 text-[14px] uppercase font-bold tracking-wider outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 ${errors.phone ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                      onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 10))}
+                      className={`w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 ${errors.phone ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                      autoComplete="tel"
                     />
                   </div>
-                  {errors.phone && <p className="text-red-500 text-[14px] pl-4 font-secondary mt-0.5">{errors.phone}</p>}
+                  {errors.phone && <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.phone}</p>}
                 </div>
 
                 {/* Email */}
-                <div className="sm:col-span-2 space-y-1">
+                <div className="sm:col-span-2 space-y-1.5">
+                  <label htmlFor="email" className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">
+                    Email Address
+                  </label>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-405 group-focus-within:text-primary transition-colors">
+                      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     </div>
                     <input
+                      id="email"
                       type="email"
-                      placeholder="EMAIL ADDRESS"
+                      placeholder="company@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className={`w-full rounded-full border border-slate-300 bg-white pl-10 pr-4 py-2 text-[14px] uppercase font-bold tracking-wider outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 ${errors.email ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                      className={`w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 ${errors.email ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                      autoComplete="email"
                     />
                   </div>
-                  {errors.email && <p className="text-red-500 text-[14px] pl-4 font-secondary mt-0.5">{errors.email}</p>}
+                  {errors.email && <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.email}</p>}
                 </div>
 
                 {/* Password */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
+                  <label htmlFor="password" className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">
+                    Password
+                  </label>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-405 group-focus-within:text-primary transition-colors">
+                      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
                     <input
+                      id="password"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="PASSWORD"
+                      placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className={`w-full rounded-full border border-slate-300 bg-white pl-10 pr-10 py-2 text-[14px] uppercase font-bold tracking-wider outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 ${errors.password ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                      className={`w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-10 py-2.5 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 ${errors.password ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-650 focus:outline-none cursor-pointer"
                     >
                       {showPassword ? (
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                         </svg>
                       ) : (
@@ -328,28 +347,33 @@ function RegisterOperatorPage() {
                       )}
                     </button>
                   </div>
-                  {errors.password && <p className="text-red-500 text-[14px] pl-4 font-secondary mt-0.5">{errors.password}</p>}
+                  {errors.password && <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.password}</p>}
                 </div>
 
                 {/* Confirm Password */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
+                  <label htmlFor="confirmPassword" className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">
+                    Confirm Password
+                  </label>
                   <div className="relative group">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-405 group-focus-within:text-primary transition-colors">
+                      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </div>
                     <input
+                      id="confirmPassword"
                       type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="CONFIRM PASSWORD"
+                      placeholder="••••••••"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className={`w-full rounded-full border border-slate-300 bg-white pl-10 pr-10 py-2 text-[14px] uppercase font-bold tracking-wider outline-none transition-all duration-300 focus:border-primary focus:ring-4 focus:ring-primary/10 ${errors.confirmPassword ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                      className={`w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-10 py-2.5 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 ${errors.confirmPassword ? 'border-red-500 focus:ring-red-500/10' : ''}`}
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none cursor-pointer"
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-655 focus:outline-none cursor-pointer"
                     >
                       {showConfirmPassword ? (
                         <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -363,13 +387,13 @@ function RegisterOperatorPage() {
                       )}
                     </button>
                   </div>
-                  {errors.confirmPassword && <p className="text-red-500 text-[14px] pl-4 font-secondary mt-0.5">{errors.confirmPassword}</p>}
+                  {errors.confirmPassword && <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.confirmPassword}</p>}
                 </div>
 
               </div>
 
               {/* Agree Terms Checkbox */}
-              <div className="space-y-1 pt-0.5 px-2">
+              <div className="space-y-1 pt-0.5 px-1 text-left">
                 <label className="flex items-start gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -377,7 +401,7 @@ function RegisterOperatorPage() {
                     onChange={(e) => setAgreeTerms(e.target.checked)}
                     className="mt-0.5 w-3.5 h-3.5 rounded text-primary focus:ring-primary/20 border-slate-300 transition-colors"
                   />
-                  <span className="text-[14px] text-slate-500 font-secondary leading-tight">
+                  <span className="text-[13px] text-slate-500 font-secondary leading-tight">
                     I agree to the{' '}
                     <a href="/terms" className="text-primary hover:underline font-semibold">
                       Terms of Service
@@ -385,20 +409,19 @@ function RegisterOperatorPage() {
                     and{' '}
                     <a href="/privacy" className="text-primary hover:underline font-semibold">
                       Privacy Policy
-                    </a>{' '}
-                    of BusNet.
+                    </a>.
                   </span>
                 </label>
-                {errors.agreeTerms && <p className="text-red-500 text-[14px] pl-4 font-secondary mt-0.5">{errors.agreeTerms}</p>}
+                {errors.agreeTerms && <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.agreeTerms}</p>}
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-2.5 rounded-full btn-premium-gradient py-2.5 text-[14px] active:scale-[0.98] transition-all duration-300 disabled:opacity-75 cursor-pointer"
+                className="w-full mt-2.5 rounded-full btn-premium-gradient py-2.5 text-[14px] active:scale-[0.98] transition-all duration-300 disabled:opacity-75 cursor-pointer shadow-md hover:shadow-lg shadow-primary/20 hover:shadow-primary/30"
               >
-                {isLoading ? 'PROCESSING...' : 'REGISTER PARTNER'}
+                {isLoading ? 'PROCESSING...' : 'REGISTER OPERATOR'}
               </button>
             </form>
           </div>
@@ -420,16 +443,16 @@ function RegisterOperatorPage() {
             <Link to="/login" className="px-4 py-1.5 rounded-full border border-white/30 bg-white/10 hover:bg-white hover:text-slate-950 transition-all duration-300">SIGN IN</Link>
           </div>
 
-          {/* Welcome Message */}
-          <div className="my-auto max-w-sm space-y-3.5">
-            <h1 className="text-[22px] font-extrabold tracking-tight leading-none text-white animate-fade-in font-primary">
+          {/* Welcome Message inside Glassmorphic panel */}
+          <div className="my-auto max-w-sm backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] space-y-4 animate-fade-in w-full text-left">
+            <h2 className="text-[22px] font-extrabold tracking-tight leading-none text-white font-primary">
               Join Us.
-            </h1>
-            <p className="text-white/70 text-[14px] leading-relaxed font-secondary">
+            </h2>
+            <p className="text-white/85 text-[14px] leading-relaxed font-secondary">
               Register as a transit partner to manage layouts, sell tickets online, and track business revenue with BusNet.
             </p>
             <div className="pt-2 text-[14px] font-secondary">
-              <span className="text-white/60">Already have an account? </span>
+              <span className="text-white/70">Already have an account? </span>
               <Link to="/login" className="text-white font-bold hover:underline">
                 Sign in now
               </Link>
@@ -437,7 +460,7 @@ function RegisterOperatorPage() {
           </div>
 
           {/* Footer Text */}
-          <div className="text-[14px] text-white/40 font-secondary">
+          <div className="text-[12px] text-white/40 font-secondary text-right">
             © 2026 BusNet Inc. All rights reserved.
           </div>
         </div>

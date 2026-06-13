@@ -1,3 +1,4 @@
+// Reading this as: Account type selection page for transit passengers and operators, leaning toward clean typography, hover transitions, and glassmorphic welcome overlay.
 import { Link, useNavigate } from 'react-router-dom'
 
 function RegisterPage() {
@@ -15,7 +16,7 @@ function RegisterPage() {
             {/* Brand Logo Image */}
             <div className="flex shrink-0">
               <img
-                src="/logo.jpg"
+                src="/images/logo.jpg"
                 alt="BusNet Logo"
                 className="w-9 h-9 object-cover rounded-xl shadow-md border border-slate-100"
               />
@@ -27,25 +28,25 @@ function RegisterPage() {
 
           <div className="max-w-sm w-full mx-auto my-auto space-y-5 animate-fade-in">
             <div className="text-center space-y-1">
-              <h1 className="text-[18px] text-slate-900 font-extrabold uppercase tracking-wide">CREATE AN ACCOUNT</h1>
+              <h1 className="text-[16px] text-slate-900 font-extrabold uppercase tracking-wide">CREATE AN ACCOUNT</h1>
               <p className="text-slate-400 text-[13px] font-secondary">Choose the account type to get started</p>
             </div>
 
-            <div className="space-y-3 pt-1">
+            <div className="space-y-4 pt-1">
               {/* Option 1: Passenger */}
               <div
                 onClick={() => navigate('/register/passenger')}
-                className="group flex items-start gap-4 p-4 rounded-2xl border border-slate-200 bg-white hover:border-primary/50 hover:bg-blue-50/10 cursor-pointer transition-all duration-300 active:scale-[0.99] shadow-sm hover:shadow-lg hover:shadow-primary/5"
+                className="group flex items-start gap-4 p-5 rounded-2xl border border-slate-200 bg-white hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-md cursor-pointer transition-all duration-300 active:scale-[0.98]"
               >
                 <div className="p-3 rounded-xl bg-blue-50 text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300 shadow-inner">
                   <svg className="w-5.5 h-5.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
                 </div>
-                <div className="space-y-0.5 select-none text-left">
-                  <h3 className="text-[14px] font-bold text-slate-900 group-hover:text-primary transition-colors font-primary">
+                <div className="space-y-1 select-none text-left">
+                  <div className="text-[14px] font-bold text-slate-900 group-hover:text-primary transition-colors font-primary">
                     Passenger Account
-                  </h3>
+                  </div>
                   <p className="text-[12px] text-slate-500 leading-relaxed font-secondary">
                     Book tickets online, choose seats, accumulate points, and manage your travel schedule easily.
                   </p>
@@ -55,17 +56,17 @@ function RegisterPage() {
               {/* Option 2: Operator / Transit Partner */}
               <div
                 onClick={() => navigate('/register/operator')}
-                className="group flex items-start gap-4 p-4 rounded-2xl border border-slate-200 bg-white hover:border-primary/50 hover:bg-blue-50/10 cursor-pointer transition-all duration-300 active:scale-[0.99] shadow-sm hover:shadow-lg hover:shadow-primary/5"
+                className="group flex items-start gap-4 p-5 rounded-2xl border border-slate-200 bg-white hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-md cursor-pointer transition-all duration-300 active:scale-[0.98]"
               >
                 <div className="p-3 rounded-xl bg-blue-50 text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300 shadow-inner">
                   <svg className="w-5.5 h-5.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                 </div>
-                <div className="space-y-0.5 select-none text-left">
-                  <h3 className="text-[14px] font-bold text-slate-900 group-hover:text-primary transition-colors font-primary">
+                <div className="space-y-1 select-none text-left">
+                  <div className="text-[14px] font-bold text-slate-900 group-hover:text-primary transition-colors font-primary">
                     Transit Operator Account
-                  </h3>
+                  </div>
                   <p className="text-[12px] text-slate-500 leading-relaxed font-secondary">
                     Register to sell tickets, manage layouts, track revenue, and grow your transit brand with BusNet.
                   </p>
@@ -91,16 +92,16 @@ function RegisterPage() {
             <Link to="/login" className="px-4 py-1.5 rounded-full border border-white/30 bg-white/10 hover:bg-white hover:text-slate-950 transition-all duration-300">SIGN IN</Link>
           </div>
 
-          {/* Welcome Message */}
-          <div className="my-auto max-w-sm space-y-3.5">
-            <h1 className="text-[22px] font-extrabold tracking-tight leading-none text-white animate-fade-in font-primary">
+          {/* Welcome Message inside Glassmorphic panel */}
+          <div className="my-auto max-w-sm backdrop-blur-md bg-white/10 border border-white/20 rounded-2xl p-6.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] space-y-4 animate-fade-in w-full text-left">
+            <h2 className="text-[22px] font-extrabold tracking-tight leading-none text-white font-primary">
               Join Us.
-            </h1>
-            <p className="text-white/70 text-[14px] leading-relaxed font-secondary">
+            </h2>
+            <p className="text-white/85 text-[14px] leading-relaxed font-secondary">
               Create your passenger account to search trips, earn reward points, and book smart rides today.
             </p>
             <div className="pt-2 text-[14px] font-secondary">
-              <span className="text-white/60">Already have an account? </span>
+              <span className="text-white/70">Already have an account? </span>
               <Link to="/login" className="text-white font-bold hover:underline">
                 Sign in now
               </Link>
@@ -108,7 +109,7 @@ function RegisterPage() {
           </div>
 
           {/* Footer Text */}
-          <div className="text-[14px] text-white/40 font-secondary">
+          <div className="text-[12px] text-white/40 font-secondary text-right">
             © 2026 BusNet Inc. All rights reserved.
           </div>
         </div>
