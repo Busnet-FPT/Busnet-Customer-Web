@@ -12,6 +12,8 @@ import NotFoundPage from '../pages/NotFoundPage'
 import SubscriptionPage from '../pages/subscription-page/SubscriptionPage'
 import BlogPage from '../pages/blog-page/BlogPage'
 import BlogDetailPage from '../pages/blog-page/blog-detail-page/BlogDetailPage'
+import OperatorListPage from '../pages/operator-page/OperatorListPage'
+import OperatorDetailPage from '../pages/operator-page/OperatorDetailPage'
 
 
 export const router = createBrowserRouter([
@@ -59,6 +61,14 @@ export const router = createBrowserRouter([
       {
         path: 'subscription',
         element: <SubscriptionPage />
+      },
+      {
+        path: 'operators',
+        element: <OperatorListPage />
+      },
+      {
+        path: 'operators/:id',
+        element: <OperatorDetailPage />
       },
       {
         path: 'blog',

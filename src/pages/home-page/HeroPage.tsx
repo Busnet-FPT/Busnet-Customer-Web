@@ -13,18 +13,6 @@ function HeroPage() {
     alert(`Searching trips from "${from}" to "${to}" on ${date || 'today'}`)
   }
 
-  const partners = [
-    'Phuong Trang',
-    'Thanh Buoi',
-    'Hoa Mai Limousine',
-    'Sao Viet',
-    'Mai Linh Express',
-    'Kumho Samco',
-    'Hai Van',
-    'Cuc Tung',
-    'Hoang Long'
-  ]
-
   return (
     <div className="relative w-full overflow-hidden bg-white font-sans flex flex-col justify-between min-h-[650px] md:min-h-[780px]">
       {/* Inline styles for scrolling brand ticker and animations */}
@@ -193,42 +181,6 @@ function HeroPage() {
           </svg>
         )}
       </button>
-
-      {/* Brand Partners Horizontal Infinite Ticker */}
-      <div className="relative z-10 border-t border-slate-100 bg-white py-6">
-        <div className="mx-auto max-w-6xl px-4 mb-3">
-          <p className="text-center text-xs font-bold uppercase tracking-wider text-slate-400 font-primary">
-            OUR PREFERED TRANSPORT PARTNERS
-          </p>
-        </div>
-
-        <div className="relative w-full overflow-hidden whitespace-nowrap mask-gradient">
-          {/* Fading side overlays to make ticker look premium */}
-          <div className="absolute top-0 bottom-0 left-0 z-10 w-20 bg-linear-to-r from-white to-transparent pointer-events-none"></div>
-          <div className="absolute top-0 bottom-0 right-0 z-10 w-20 bg-linear-to-l from-white to-transparent pointer-events-none"></div>
-
-          <div className="animate-scroll flex gap-16 items-center">
-            {/* First Set */}
-            {partners.map((partner, index) => (
-              <span
-                key={`p1-${index}`}
-                className="text-body font-bold tracking-widest text-slate-400 uppercase transition-colors duration-300 hover:text-primary select-none cursor-default font-primary"
-              >
-                {partner}
-              </span>
-            ))}
-            {/* Second Set (Duplicate for seamless loop) */}
-            {partners.map((partner, index) => (
-              <span
-                key={`p2-${index}`}
-                className="text-body font-bold tracking-widest text-slate-400 uppercase transition-colors duration-300 hover:text-primary select-none cursor-default font-primary"
-              >
-                {partner}
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
