@@ -50,7 +50,6 @@ function RegisterPassengerPage() {
 
   // Error/Success validation states
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
-  const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [apiError, setApiError] = useState('')
 
@@ -123,7 +122,7 @@ function RegisterPassengerPage() {
         dob: dob || undefined
       })
 
-      setIsSubmitted(true)
+      navigate(`/verify-email?email=${encodeURIComponent(email.trim())}`)
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
         const data = error.response.data
@@ -197,69 +196,7 @@ function RegisterPassengerPage() {
     }
   }, [])
 
-  if (isSubmitted) {
-    return (
-      <div className="mx-auto w-full max-w-6xl rounded-3xl bg-white shadow-2xl overflow-hidden border border-slate-100/80 animate-fade-in my-4 font-primary">
-        <div className="flex flex-col md:flex-row min-h-[620px]">
 
-          {/* Left Hero Side */}
-          <div className="hidden md:flex md:w-1/2 bg-linear-to-br from-slate-950 via-[#0B1528] to-blue-950 relative p-12 flex-col justify-between overflow-hidden">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-primary/20 blur-[90px]"></div>
-            <div className="relative z-10 flex items-center gap-2">
-              <span className="brand-logo text-white">
-                Bus<span className="text-primary">Net</span>
-              </span>
-            </div>
-
-            <div className="relative z-10 my-auto flex flex-col items-center">
-              <img
-                src="/images/busnet_hero.jpg"
-                alt="BusNet futuristic electric coach"
-                className="w-full max-w-[350px] object-contain drop-shadow-[0_20px_45px_rgba(1,133,255,0.4)] animate-pulse-slow"
-              />
-              <div className="text-center mt-8 space-y-2.5">
-                <h2 className="text-white text-[18px] font-bold tracking-wide">
-                  RIDE SMARTER SAVE TOGETHER
-                </h2>
-                <p className="text-slate-400 text-[14px] font-secondary max-w-xs mx-auto">
-                  Join thousands of passengers traveling smart and safe every day.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Success Side */}
-          <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center items-center bg-white text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mb-6 shadow-inner border border-emerald-100 animate-bounce">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-
-            <div className="text-[18px] font-extrabold text-slate-900 font-primary">Registration Successful!</div>
-            <p className="mt-3 text-[13px] text-slate-600 font-secondary max-w-sm leading-relaxed">
-              Your account has been successfully created with the username <strong className="text-slate-950 font-bold">@{username}</strong>. Start searching for amazing trips with BusNet right now.
-            </p>
-
-            <div className="mt-6 flex flex-col sm:flex-row gap-3 w-full max-w-xs font-primary">
-              <Link
-                to="/login"
-                className="flex-1 rounded-xl btn-premium-gradient py-2 text-[14px] text-center"
-              >
-                SIGN IN NOW
-              </Link>
-              <Link
-                to="/"
-                className="flex-1 rounded-xl border border-slate-200 text-slate-700 py-2 text-[14px] font-bold text-center hover:bg-slate-50 active:scale-[0.99] transition-all duration-300"
-              >
-                HOME
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="mx-auto w-full max-w-6xl rounded-3xl bg-white shadow-2xl overflow-hidden border border-slate-100/80 animate-fade-in my-4 font-primary">
