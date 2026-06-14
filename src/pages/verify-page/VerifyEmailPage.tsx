@@ -90,7 +90,7 @@ function VerifyEmailPage() {
         <div className="flex flex-col md:flex-row min-h-[620px]">
           
           {/* Left Hero Side */}
-          <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-slate-950 via-[#0B1528] to-blue-950 relative p-12 flex-col justify-between overflow-hidden text-white select-none">
+          <div className="hidden md:flex md:w-1/2 bg-linear-to-br from-slate-950 via-[#0B1528] to-blue-950 relative p-12 flex-col justify-between overflow-hidden text-white select-none">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-primary/20 blur-[90px] pointer-events-none"></div>
             
             <div className="relative z-10 flex items-center gap-3">
@@ -272,7 +272,7 @@ function VerifyEmailPage() {
             </span>
           </div>
 
-          <div className="my-auto max-w-sm backdrop-blur-md bg-white/10 border border-white/20 rounded-3xl p-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.15)] shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] space-y-4 animate-fade-in w-full text-left">
+          <div className="my-auto max-w-sm backdrop-blur-md bg-white/10 border border-white/20 rounded-3xl p-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.15)] space-y-4 animate-fade-in w-full text-left">
             <h2 className="text-3xl font-extrabold tracking-tight leading-none text-white font-primary">
               Security first.
             </h2>
