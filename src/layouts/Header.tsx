@@ -1,0 +1,231 @@
+import { useState, useEffect, useRef } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+
+function Header() {
+    const location = useLocation()
+    const navigate = useNavigate()
+    const [lang, setLang] = useState('EN')
+    const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false)
+    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
+    const [user, setUser] = useState<any>(null)
+
+    const langDropdownRef = useRef<HTMLDivElement>(null)
+    const userDropdownRef = useRef<HTMLDivElement>(null)
+
+    const navLinks = [
+        { name: 'Home', path: '/' },
+        { name: 'Find Trips', path: '/trips' },
+        { name: 'My Tickets', path: '/booking' },
+        { name: 'Subscription', path: '/subscription' }
+    ]
+
+    // Load user profile and monitor pathname changes
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user')
+        if (storedUser) {
+            try {
+                setUser(JSON.parse(storedUser))
+            } catch (e) {
+                console.error(e)
+            }
+        } else {
+            setUser(null)
+        }
+    }, [location.pathname])
+
+    // Close dropdowns on click outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (langDropdownRef.current && !langDropdownRef.current.contains(event.target as Node)) {
+                setIsLangDropdownOpen(false)
+            }
+            if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
+                setIsUserDropdownOpen(false)
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [])
+
+    const handleLogout = () => {
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+        setUser(null)
+        setIsUserDropdownOpen(false)
+        navigate('/login')
+    }
+
+    return (
+        <header className="sticky top-0 z-50 backdrop-blur-md bg-white/90 border-b border-slate-100 shadow-sm">
+            <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3.5">
+                {/* Brand Logo & Name */}
+                <Link to="/" className="flex items-center gap-3 group">
+                    <img
+                        src="/logo.jpg"
+                        alt="BusNet Logo"
+                        className="h-9 w-9 object-cover rounded-xl shadow-md border border-slate-100 group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <span className="brand-logo text-slate-900 group-hover:text-primary transition-colors duration-300">
+                        Bus<span className="text-primary">Net</span>
+                    </span>
+                </Link>
+
+                {/* Navigation Links */}
+                <nav className="hidden md:flex items-center gap-8 nav-link font-medium">
+                    {navLinks.map((link) => {
+                        const isActive = location.pathname === link.path
+                        return (
+                            <Link
+                                key={link.path}
+                                to={link.path}
+                                className={`relative py-1 transition-colors duration-300 ${isActive ? 'text-primary' : 'text-slate-600 hover:text-primary'
+                                    } after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-0.5 after:bg-primary after:transition-all after:duration-300 ${isActive ? 'after:w-full' : 'after:w-0 hover:after:w-full'
+                                    }`}
+                            >
+                                {link.name}
+                            </Link>
+                        )
+                    })}
+                </nav>
+
+                {/* Right Section: Language Dropdown & Auth CTA */}
+                <div className="flex items-center gap-4">
+                    {/* Language Switcher */}
+                    <div className="relative" ref={langDropdownRef}>
+                        <button
+                            onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all duration-200 text-xs font-bold text-slate-700 font-primary active:scale-[0.97] cursor-pointer"
+                        >
+                            <span className="flex items-center gap-1.5">
+                                {lang === 'VI' ? (
+                                    <>
+                                        <span className="text-sm leading-none">🇻🇳</span>
+                                        <span>Tiếng Việt</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="text-sm leading-none">🇬🇧</span>
+                                        <span>English</span>
+                                    </>
+                                )}
+                            </span>
+                            <svg
+                                className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${isLangDropdownOpen ? 'rotate-180' : ''
+                                    }`}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {isLangDropdownOpen && (
+                            <div className="absolute right-0 mt-2 w-36 rounded-xl bg-white border border-slate-100 shadow-lg py-1 z-50 animate-fade-in">
+                                <button
+                                    onClick={() => {
+                                        setLang('VI')
+                                        setIsLangDropdownOpen(false)
+                                    }}
+                                    className={`w-full flex items-center gap-2 px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 cursor-pointer font-primary ${lang === 'VI' ? 'text-primary' : 'text-slate-600'
+                                        }`}
+                                >
+                                    <span className="text-sm leading-none">🇻🇳</span>
+                                    <span>Tiếng Việt</span>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setLang('EN')
+                                        setIsLangDropdownOpen(false)
+                                    }}
+                                    className={`w-full flex items-center gap-2 px-3 py-2 text-left text-xs font-bold hover:bg-slate-50 cursor-pointer font-primary ${lang === 'EN' ? 'text-primary' : 'text-slate-600'
+                                        }`}
+                                >
+                                    <span className="text-sm leading-none">🇬🇧</span>
+                                    <span>English</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Divider */}
+                    <span className="h-5 w-px bg-slate-200 hidden sm:inline-block"></span>
+
+                    {/* Login Button or Avatar Dropdown */}
+                    {user ? (
+                        <div className="relative" ref={userDropdownRef}>
+                            <button
+                                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                                className="flex items-center gap-2 focus:outline-none cursor-pointer group"
+                            >
+                                {user.profilePicture ? (
+                                    <img
+                                        src={user.profilePicture}
+                                        alt={user.fullName}
+                                        className="w-9 h-9 rounded-full object-cover border border-slate-200 group-hover:border-primary transition-all duration-300"
+                                        referrerPolicy="no-referrer"
+                                    />
+                                ) : (
+                                    <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm border border-slate-200 group-hover:border-primary transition-all duration-300">
+                                        {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
+                            </button>
+
+                            {isUserDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white border border-slate-100 shadow-lg py-1 z-50 animate-fade-in font-primary text-xs">
+                                    <div className="px-4 py-2 border-b border-slate-100">
+                                        <p className="font-bold text-slate-800 truncate">{user.fullName || user.username}</p>
+                                        <p className="text-slate-400 font-secondary mt-0.5 truncate">{user.email}</p>
+                                    </div>
+                                    <Link
+                                        to="/profile"
+                                        onClick={() => setIsUserDropdownOpen(false)}
+                                        className="flex items-center gap-2 px-4 py-2 text-slate-700 hover:bg-slate-50 cursor-pointer font-bold transition-all"
+                                    >
+                                        <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                        My Profile
+                                    </Link>
+                                    <Link
+                                        to="/booking"
+                                        onClick={() => setIsUserDropdownOpen(false)}
+                                        className="flex items-center gap-2 px-4 py-2 text-slate-700 hover:bg-slate-50 cursor-pointer font-bold transition-all"
+                                    >
+                                        <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                        </svg>
+                                        My Tickets
+                                    </Link>
+                                    <div className="border-t border-slate-100 my-1"></div>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center gap-2 px-4 py-2 text-red-500 hover:bg-slate-50 cursor-pointer font-bold text-left transition-all"
+                                    >
+                                        <svg className="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                        </svg>
+                                        Sign Out
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <Link
+                            to="/login"
+                            className="btn-primary rounded-xl px-5 py-2.5 shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/30 active:scale-[0.98] inline-block text-center"
+                        >
+                            Sign In
+                        </Link>
+                    )}
+                </div>
+            </div>
+        </header>
+    )
+}
+
+export default Header

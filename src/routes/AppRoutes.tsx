@@ -1,12 +1,16 @@
 import { createBrowserRouter } from 'react-router-dom'
 import CustomerLayout from '../layouts/CustomerLayout'
-import HomePage from '../pages/HomePage'
-import LoginPage from '../pages/LoginPage'
-import RegisterPage from '../pages/RegisterPage'
+import HomePage from '../pages/home-page/HomePage'
+import LoginPage from '../pages/login-page/LoginPage'
+import RegisterPage from '../pages/register-page/RegisterPage'
+import RegisterPassengerPage from '../pages/register-page/RegisterPassengerPage'
+import RegisterOperatorPage from '../pages/register-page/RegisterOperatorPage'
 import TripsPage from '../pages/TripsPage'
 import BookingPage from '../pages/BookingPage'
 import ProfilePage from '../pages/ProfilePage'
 import NotFoundPage from '../pages/NotFoundPage'
+import SubscriptionPage from '../pages/SubscriptionPage'
+
 
 export const router = createBrowserRouter([
   {
@@ -23,7 +27,20 @@ export const router = createBrowserRouter([
       },
       {
         path: 'register',
-        element: <RegisterPage />,
+        children: [
+          {
+            index: true,
+            element: <RegisterPage />,
+          },
+          {
+            path: 'passenger',
+            element: <RegisterPassengerPage />,
+          },
+          {
+            path: 'operator',
+            element: <RegisterOperatorPage />,
+          },
+        ],
       },
       {
         path: 'trips',
@@ -37,6 +54,10 @@ export const router = createBrowserRouter([
         path: 'profile',
         element: <ProfilePage />,
       },
+      {
+        path: 'subscription',
+        element: <SubscriptionPage />
+      }
     ],
   },
   {
