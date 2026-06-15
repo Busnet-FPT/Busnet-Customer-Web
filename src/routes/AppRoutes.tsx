@@ -1,15 +1,28 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import CustomerLayout from '../layouts/CustomerLayout'
-import HomePage from '../pages/home-page/HomePage'
-import LoginPage from '../pages/login-page/LoginPage'
-import RegisterPage from '../pages/register-page/RegisterPage'
-import RegisterPassengerPage from '../pages/register-page/RegisterPassengerPage'
-import RegisterOperatorPage from '../pages/register-page/RegisterOperatorPage'
-import TripsPage from '../pages/TripsPage'
-import BookingPage from '../pages/BookingPage'
-import ProfilePage from '../pages/ProfilePage'
-import NotFoundPage from '../pages/NotFoundPage'
-import SubscriptionPage from '../pages/SubscriptionPage'
+
+const HomePage = lazy(() => import('../pages/home-page/HomePage'))
+const LoginPage = lazy(() => import('../pages/login-page/LoginPage'))
+const RegisterPage = lazy(() => import('../pages/register-page/RegisterPage'))
+const RegisterPassengerPage = lazy(() => import('../pages/register-page/RegisterPassengerPage'))
+const RegisterOperatorPage = lazy(() => import('../pages/register-page/RegisterOperatorPage'))
+const TripsPage = lazy(() => import('../pages/TripsPage'))
+const BookingPage = lazy(() => import('../pages/BookingPage'))
+const ProfilePage = lazy(() => import('../pages/ProfilePage'))
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
+const SubscriptionPage = lazy(() => import('../pages/subscription-page/SubscriptionPage'))
+const BlogPage = lazy(() => import('../pages/blog-page/BlogPage'))
+const BlogDetailPage = lazy(() => import('../pages/blog-page/blog-detail-page/BlogDetailPage'))
+const OperatorListPage = lazy(() => import('../pages/operator-page/OperatorListPage'))
+const OperatorDetailPage = lazy(() => import('../pages/operator-page/OperatorDetailPage'))
+const VerifyEmailPage = lazy(() => import('../pages/verify-page/VerifyEmailPage'))
+
+const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>}>
+    {children}
+  </Suspense>
+)
 
 
 export const router = createBrowserRouter([
@@ -19,49 +32,69 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: <SuspenseWrapper><HomePage /></SuspenseWrapper>,
       },
       {
         path: 'login',
-        element: <LoginPage />,
+        element: <SuspenseWrapper><LoginPage /></SuspenseWrapper>,
+      },
+      {
+        path: 'verify-email',
+        element: <SuspenseWrapper><VerifyEmailPage /></SuspenseWrapper>,
       },
       {
         path: 'register',
         children: [
           {
             index: true,
-            element: <RegisterPage />,
+            element: <SuspenseWrapper><RegisterPage /></SuspenseWrapper>,
           },
           {
             path: 'passenger',
-            element: <RegisterPassengerPage />,
+            element: <SuspenseWrapper><RegisterPassengerPage /></SuspenseWrapper>,
           },
           {
             path: 'operator',
-            element: <RegisterOperatorPage />,
+            element: <SuspenseWrapper><RegisterOperatorPage /></SuspenseWrapper>,
           },
         ],
       },
       {
         path: 'trips',
-        element: <TripsPage />,
+        element: <SuspenseWrapper><TripsPage /></SuspenseWrapper>,
       },
       {
         path: 'booking',
-        element: <BookingPage />,
+        element: <SuspenseWrapper><BookingPage /></SuspenseWrapper>,
       },
       {
         path: 'profile',
-        element: <ProfilePage />,
+        element: <SuspenseWrapper><ProfilePage /></SuspenseWrapper>,
       },
       {
         path: 'subscription',
-        element: <SubscriptionPage />
+        element: <SuspenseWrapper><SubscriptionPage /></SuspenseWrapper>
+      },
+      {
+        path: 'operators',
+        element: <SuspenseWrapper><OperatorListPage /></SuspenseWrapper>
+      },
+      {
+        path: 'operators/:id',
+        element: <SuspenseWrapper><OperatorDetailPage /></SuspenseWrapper>
+      },
+      {
+        path: 'blog',
+        element: <SuspenseWrapper><BlogPage /></SuspenseWrapper>
+      },
+      {
+        path: 'blog/:id',
+        element: <SuspenseWrapper><BlogDetailPage /></SuspenseWrapper>
       }
     ],
   },
   {
     path: '*',
-    element: <NotFoundPage />,
+    element: <SuspenseWrapper><NotFoundPage /></SuspenseWrapper>,
   },
 ])

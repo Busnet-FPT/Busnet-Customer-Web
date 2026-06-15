@@ -9,7 +9,7 @@ function Footer() {
                     <div className="space-y-4">
                         <Link to="/" className="flex items-center gap-3">
                             <img
-                                src="/logo.jpg"
+                                src="/images/logo.jpg"
                                 alt="BusNet Logo"
                                 className="h-10 w-10 object-cover rounded-xl border border-slate-700 shadow-md"
                             />
@@ -74,7 +74,7 @@ function Footer() {
                                 <svg className="w-4 h-4 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                 </svg>
-                                Hotline: <strong className="text-white hover:text-primary transition-colors">1900 6868</strong>
+                                Hotline: <strong className="text-white hover:text-primary transition-colors">+84 9663 826 55</strong>
                             </p>
                             <p className="flex items-center gap-2">
                                 <svg className="w-4 h-4 text-primary shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -87,7 +87,7 @@ function Footer() {
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                <span>600 Nguyen Van Cu Extended, An Binh, Can Tho</span>
+                                <span>600 Nguyen Van Cu Road, An Binh Ward, Ninh Kieu District, Can Tho City</span>
                             </p>
                         </div>
                     </div>

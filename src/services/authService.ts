@@ -72,3 +72,43 @@ export const loginWithGoogle = async (idToken: string): Promise<GoogleAuthRespon
   const response = await api.post<GoogleAuthResponse>('/customer/auth/google', { idToken })
   return response.data
 }
+
+export interface VerifyEmailResponse {
+  success: boolean
+  message: string
+  data: {
+    account: {
+      _id: string
+      username: string
+      email: string
+      status: string
+      isEmailVerified: boolean
+    }
+  }
+}
+
+export interface ResendOtpResponse {
+  success: boolean
+  message: string
+  data: {
+    message: string
+  }
+}
+
+/**
+ * Verify customer email address with OTP
+ * POST /api/customer/auth/verify-email
+ */
+export const verifyEmail = async (email: string, code: string): Promise<VerifyEmailResponse> => {
+  const response = await api.post<VerifyEmailResponse>('/customer/auth/verify-email', { email, code })
+  return response.data
+}
+
+/**
+ * Resend verification OTP code
+ * POST /api/customer/auth/forgot-password
+ */
+export const resendVerificationOtp = async (email: string): Promise<ResendOtpResponse> => {
+  const response = await api.post<ResendOtpResponse>('/customer/auth/forgot-password', { email })
+  return response.data
+}
