@@ -167,7 +167,7 @@ export function BlogDetailPage() {
 
               {/* Main typography HTML content container */}
               <div 
-                className="html-content text-slate-750 text-base leading-relaxed space-y-5 font-secondary pt-2"
+                className="html-content text-slate-700 text-base leading-relaxed space-y-5 font-secondary pt-2"
                 dangerouslySetInnerHTML={{ __html: htmlContent }}
               />
 

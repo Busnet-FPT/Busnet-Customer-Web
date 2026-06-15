@@ -204,7 +204,7 @@ function Header() {
                                         ? 'bg-white/10 text-white border-white/20 group-hover:border-white'
                                         : 'bg-primary/10 text-primary border-slate-200 group-hover:border-primary'
                                         }`}>
-                                        {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
+                                        {user.fullName ? user.fullName.charAt(0).toUpperCase() : (user.username?.charAt(0)?.toUpperCase() || 'U')}
                                     </div>
                                 )}
                             </button>

@@ -112,3 +112,37 @@ export const resendVerificationOtp = async (email: string): Promise<ResendOtpRes
   const response = await api.post<ResendOtpResponse>('/customer/auth/forgot-password', { email })
   return response.data
 }
+
+export interface LoginData {
+  identifier: string
+  password: string
+}
+
+export interface LoginResponse {
+  success: boolean
+  message: string
+  data: {
+    token: string
+    account: {
+      _id: string
+      username: string
+      email: string
+      phone: string | null
+      fullName: string
+      role: string
+      status: string
+      profilePicture: string | null
+      createdAt: string
+    }
+  }
+}
+
+/**
+ * Login a customer account
+ * POST /api/customer/auth/login
+ */
+export const loginCustomer = async (data: LoginData): Promise<LoginResponse> => {
+  const response = await api.post<LoginResponse>('/customer/auth/login', data)
+  return response.data
+}
+

@@ -1,7 +1,7 @@
 // Reading this as: Login interface for transit passengers and operators, with a clean premium tech vibe, leaning toward modern card splits, glassmorphic accents, and fluid-mesh gradient side panels.
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { loginWithGoogle } from '../../services/authService'
+import { loginWithGoogle, loginCustomer } from '../../services/authService'
 import axios from 'axios'
 
 declare global {
@@ -76,9 +76,7 @@ function LoginPage() {
   const validate = () => {
     const tempErrors: { [key: string]: string } = {}
     if (!email) {
-      tempErrors.email = 'Please enter your email'
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      tempErrors.email = 'Invalid email address'
+      tempErrors.email = 'Please enter your username or email'
     }
     if (!password) {
       tempErrors.password = 'Please enter your password'
@@ -87,15 +85,34 @@ function LoginPage() {
     return Object.keys(tempErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setApiError('')
     if (validate()) {
       setIsLoading(true)
-      // Simulate API login call
-      setTimeout(() => {
+      try {
+        const result = await loginCustomer({
+          identifier: email.trim(),
+          password: password
+        })
+        localStorage.setItem('token', result.data.token)
+        localStorage.setItem('user', JSON.stringify(result.data.account))
+        navigate('/')
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.data) {
+          const errorData = error.response.data;
+          if (errorData.errors && Array.isArray(errorData.errors)) {
+            const detailedMsg = errorData.errors.map((e: any) => e.message).join(', ');
+            setApiError(`${errorData.message}: ${detailedMsg}`);
+          } else {
+            setApiError(errorData.message || 'Login failed. Please check your credentials.');
+          }
+        } else {
+          setApiError('Unable to connect to server. Please try again later.')
+        }
+      } finally {
         setIsLoading(false)
-        alert('Login successful! (Simulated)')
-      }, 1500)
+      }
     }
   }
 
@@ -144,19 +161,19 @@ function LoginPage() {
                   Username or Email
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-450 group-focus-within:text-primary transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
                     <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
                   <input
                     id="email"
-                    type="email"
-                    placeholder="name@example.com"
+                    type="text"
+                    placeholder="name@example.com or username"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className={`w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10 ${errors.email ? 'border-red-500 focus:ring-red-500/10' : ''}`}
-                    autoComplete="email"
+                    autoComplete="username"
                   />
                 </div>
                 {errors.email && <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.email}</p>}
@@ -173,7 +190,7 @@ function LoginPage() {
                   </a>
                 </div>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-450 group-focus-within:text-primary transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">
                     <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
