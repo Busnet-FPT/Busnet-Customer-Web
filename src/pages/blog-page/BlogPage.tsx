@@ -287,7 +287,7 @@ export function BlogPage() {
                   <button
                     key={idx}
                     onClick={() => { setSelectedCategory(category.value); setCurrentPage(1); }}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[14px] font-semibold transition-all active:scale-[0.99] cursor-pointer ${selectedCategory === category.value ? 'bg-blue-50 text-primary' : 'text-slate-650 hover:bg-slate-50'}`}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[14px] font-semibold transition-all active:scale-[0.99] cursor-pointer ${selectedCategory === category.value ? 'bg-blue-50 text-primary' : 'text-slate-600 hover:bg-slate-50'}`}
                   >
                     <span className="font-secondary">{category.label}</span>
                   </button>
