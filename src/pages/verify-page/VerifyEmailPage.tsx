@@ -253,7 +253,11 @@ function VerifyEmailPage() {
 
           {/* Navigation link to sign in */}
           <div className="text-center text-sm font-secondary text-slate-500 pt-4 border-t border-slate-50">
-            <Link to="/login" className="font-bold text-slate-650 hover:text-primary transition-colors duration-200 flex items-center justify-center gap-1.5 uppercase tracking-wider text-xs">
+            <Link
+              to="#"
+              onClick={(e) => e.preventDefault()}
+              className="font-bold text-slate-400 cursor-not-allowed flex items-center justify-center gap-1.5 uppercase tracking-wider text-xs pointer-events-none opacity-50"
+            >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>

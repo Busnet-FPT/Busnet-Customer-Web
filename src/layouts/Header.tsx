@@ -250,11 +250,19 @@ function Header() {
                         </div>
                     ) : (
                         <Link
-                            to="/login"
-                            className={`rounded-xl px-5 py-2 text-xs font-bold font-primary transition-all duration-300 active:scale-[0.97] inline-block text-center cursor-pointer ${isTransparent
-                                ? 'border border-white/30 text-white bg-white/5 hover:bg-white hover:text-slate-900 hover:border-white shadow-none'
-                                : 'bg-primary text-white hover:bg-blue-600 shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/25'
-                                }`}
+                            to={location.pathname === '/verify-email' ? '#' : '/login'}
+                            onClick={(e) => {
+                                if (location.pathname === '/verify-email') {
+                                    e.preventDefault()
+                                }
+                            }}
+                            className={`rounded-xl px-5 py-2 text-xs font-bold font-primary transition-all duration-300 active:scale-[0.97] inline-block text-center cursor-pointer ${
+                                location.pathname === '/verify-email'
+                                    ? 'bg-slate-100 text-slate-400 border border-slate-200 pointer-events-none cursor-not-allowed shadow-none'
+                                    : isTransparent
+                                        ? 'border border-white/30 text-white bg-white/5 hover:bg-white hover:text-slate-900 hover:border-white shadow-none'
+                                        : 'bg-primary text-white hover:bg-blue-600 shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/25'
+                            }`}
                         >
                             Sign In
                         </Link>
