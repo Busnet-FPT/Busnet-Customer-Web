@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import { getProfile, updateProfile, changePassword, type UserProfile } from '../services/profileService'
 import {
   IconUser,
@@ -19,14 +20,13 @@ import axios from 'axios'
 
 function ProfilePage() {
   const navigate = useNavigate()
+  const { user, setUser } = useAuth()
 
-  // Guard: Check token
-  const token = localStorage.getItem('token')
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       navigate('/login')
     }
-  }, [token, navigate])
+  }, [user, navigate])
 
   // Profile data state
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -65,6 +65,7 @@ function ProfilePage() {
       setPhone(accountData.phone || '')
       setGender(accountData.gender || 'OTHER')
       setDob(accountData.dob ? accountData.dob.split('T')[0] : '')
+      setUser(accountData)
     } catch (err: any) {
       console.error('Error loading profile:', err)
       setInfoError('Could not fetch profile information. Please reload.')
@@ -74,10 +75,10 @@ function ProfilePage() {
   }
 
   useEffect(() => {
-    if (token) {
+    if (user) {
       fetchProfileData()
     }
-  }, [token])
+  }, [user])
 
   // Handle profile update submit
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -105,8 +106,7 @@ function ProfilePage() {
       })
       const accountData = result.data.account || result.data
       setProfile(accountData)
-      // Sync to localStorage so Header updates
-      localStorage.setItem('user', JSON.stringify(accountData))
+      setUser(accountData)
       setInfoSuccess('Profile updated successfully!')
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response?.data) {

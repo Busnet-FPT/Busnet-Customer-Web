@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { loginWithGoogle, loginCustomer } from '../../services/authService'
+import { useAuth } from '../../contexts/AuthContext'
 import axios from 'axios'
 
 declare global {
@@ -12,6 +13,7 @@ declare global {
 
 function LoginPage() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
@@ -29,8 +31,7 @@ function LoginPage() {
 
     try {
       const result = await loginWithGoogle(idToken)
-      localStorage.setItem('token', result.data.token)
-      localStorage.setItem('user', JSON.stringify(result.data.account))
+      login(result.data.account, result.data.token)
       navigate('/')
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -95,8 +96,7 @@ function LoginPage() {
           identifier: email.trim(),
           password: password
         })
-        localStorage.setItem('token', result.data.token)
-        localStorage.setItem('user', JSON.stringify(result.data.account))
+        login(result.data.account, result.data.token)
         navigate('/')
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.data) {

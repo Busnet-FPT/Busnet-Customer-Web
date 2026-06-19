@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 function Header() {
     const location = useLocation()
@@ -7,7 +8,7 @@ function Header() {
     const [lang, setLang] = useState('EN')
     const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false)
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
-    const [user, setUser] = useState<any>(null)
+    const { user, logout } = useAuth()
     const [isScrolled, setIsScrolled] = useState(false)
 
     const langDropdownRef = useRef<HTMLDivElement>(null)
@@ -37,20 +38,6 @@ function Header() {
 
     const isTransparent = location.pathname === '/' && !isScrolled
 
-    // Load user profile and monitor pathname changes
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user')
-        if (storedUser) {
-            try {
-                setUser(JSON.parse(storedUser))
-            } catch (e) {
-                console.error(e)
-            }
-        } else {
-            setUser(null)
-        }
-    }, [location.pathname])
-
     // Close dropdowns on click outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -68,9 +55,7 @@ function Header() {
     }, [])
 
     const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        setUser(null)
+        logout()
         setIsUserDropdownOpen(false)
         navigate('/login')
     }

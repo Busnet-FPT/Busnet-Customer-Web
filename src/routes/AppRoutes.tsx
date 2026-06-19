@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import CustomerLayout from '../layouts/CustomerLayout'
+import RequireAuth from '../guards/RequireAuth'
 
 const HomePage = lazy(() => import('../pages/home-page/HomePage'))
 const LoginPage = lazy(() => import('../pages/login-page/LoginPage'))
@@ -65,15 +66,15 @@ export const router = createBrowserRouter([
       },
       {
         path: 'booking',
-        element: <SuspenseWrapper><BookingPage /></SuspenseWrapper>,
+        element: <SuspenseWrapper><RequireAuth><BookingPage /></RequireAuth></SuspenseWrapper>,
       },
       {
         path: 'profile',
-        element: <SuspenseWrapper><ProfilePage /></SuspenseWrapper>,
+        element: <SuspenseWrapper><RequireAuth><ProfilePage /></RequireAuth></SuspenseWrapper>,
       },
       {
         path: 'subscription',
-        element: <SuspenseWrapper><SubscriptionPage /></SuspenseWrapper>
+        element: <SuspenseWrapper><RequireAuth><SubscriptionPage /></RequireAuth></SuspenseWrapper>
       },
       {
         path: 'operators',

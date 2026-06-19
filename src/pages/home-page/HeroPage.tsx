@@ -10,7 +10,13 @@ function HeroPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    alert(`Searching trips from "${from}" to "${to}" on ${date || 'today'}`)
+
+    const params = new URLSearchParams()
+    if (from.trim()) params.set('originProvince', from.trim())
+    if (to.trim()) params.set('destinationProvince', to.trim())
+    if (date) params.set('departureDate', date)
+
+    navigate(`/trips?${params.toString()}`)
   }
 
   return (
@@ -152,6 +158,7 @@ function HeroPage() {
                 required
               />
             </div>
+
 
             {/* Search Button */}
             <button
