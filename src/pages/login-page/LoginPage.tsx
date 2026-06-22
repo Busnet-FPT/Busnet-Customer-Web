@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { loginWithGoogle } from '../../services/authService'
 import axios from 'axios'
+import { toast } from 'react-hot-toast'
 
 declare global {
   interface Window {
@@ -31,12 +32,17 @@ function LoginPage() {
       const result = await loginWithGoogle(idToken)
       localStorage.setItem('token', result.data.token)
       localStorage.setItem('user', JSON.stringify(result.data.account))
+      toast.success('Signed in successfully!')
       navigate('/')
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
-        setApiError(error.response.data.message || 'Google login failed. Please try again.')
+        const errMsg = error.response.data.message || 'Google login failed. Please try again.'
+        setApiError(errMsg)
+        toast.error(errMsg)
       } else {
-        setApiError('Unable to connect to server. Please try again later.')
+        const errMsg = 'Unable to connect to server. Please try again later.'
+        setApiError(errMsg)
+        toast.error(errMsg)
       }
     } finally {
       setIsLoading(false)
@@ -94,8 +100,10 @@ function LoginPage() {
       // Simulate API login call
       setTimeout(() => {
         setIsLoading(false)
-        alert('Login successful! (Simulated)')
+        toast.success('Login successful!')
       }, 1500)
+    } else {
+      toast.error('Please enter a valid email and password.')
     }
   }
 

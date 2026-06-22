@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { registerCustomer, loginWithGoogle } from '../../services/authService'
 import axios from 'axios'
+import { toast } from 'react-hot-toast'
 
 declare global {
   interface Window {
@@ -34,7 +35,7 @@ function RegisterPassengerPage() {
 
   // Password Validation Checkers
   const isPasswordLengthValid = password.length > 6
-  const isPasswordFirstLetterUpper = /^[A-Z]/.test(password)
+  const hasPasswordUppercase = /[A-Z]/.test(password)
   const hasPasswordNumber = /\d/.test(password)
   const hasPasswordSpecialChar = /[!@#$%^&*(),.?":{}|<>_+\-=\[\]\\';]/.test(password)
   const [agreeTerms, setAgreeTerms] = useState(false)
@@ -88,7 +89,7 @@ function RegisterPassengerPage() {
 
     if (!password) {
       tempErrors.password = 'Please enter a password'
-    } else if (!isPasswordLengthValid || !isPasswordFirstLetterUpper || !hasPasswordNumber || !hasPasswordSpecialChar) {
+    } else if (!isPasswordLengthValid || !hasPasswordUppercase || !hasPasswordNumber || !hasPasswordSpecialChar) {
       tempErrors.password = 'Password does not meet all complexity requirements'
     }
 
@@ -108,7 +109,10 @@ function RegisterPassengerPage() {
     e.preventDefault()
     setApiError('')
 
-    if (!validate()) return
+    if (!validate()) {
+      toast.error('Please fix the errors in the form.')
+      return
+    }
 
     setIsLoading(true)
     try {
@@ -122,6 +126,7 @@ function RegisterPassengerPage() {
         dob: dob || undefined
       })
 
+      toast.success('Registration successful! Please check your email for verification.')
       navigate(`/verify-email?email=${encodeURIComponent(email.trim())}`)
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -134,11 +139,16 @@ function RegisterPassengerPage() {
             backendErrors[err.field] = err.message
           })
           setErrors(backendErrors)
+          toast.error('Validation failed. Please check the fields.')
         } else {
-          setApiError(data.message || 'Registration failed. Please try again.')
+          const errMsg = data.message || 'Registration failed. Please try again.'
+          setApiError(errMsg)
+          toast.error(errMsg)
         }
       } else {
-        setApiError('Unable to connect to server. Please try again later.')
+        const errMsg = 'Unable to connect to server. Please try again later.'
+        setApiError(errMsg)
+        toast.error(errMsg)
       }
     } finally {
       setIsLoading(false)
@@ -154,12 +164,17 @@ function RegisterPassengerPage() {
       const result = await loginWithGoogle(idToken)
       localStorage.setItem('token', result.data.token)
       localStorage.setItem('user', JSON.stringify(result.data.account))
+      toast.success('Signed in successfully with Google!')
       navigate('/')
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
-        setApiError(error.response.data.message || 'Google registration failed. Please try again.')
+        const errMsg = error.response.data.message || 'Google registration failed. Please try again.'
+        setApiError(errMsg)
+        toast.error(errMsg)
       } else {
-        setApiError('Unable to connect to server. Please try again later.')
+        const errMsg = 'Unable to connect to server. Please try again later.'
+        setApiError(errMsg)
+        toast.error(errMsg)
       }
     } finally {
       setIsLoading(false)
@@ -512,15 +527,15 @@ function RegisterPassengerPage() {
                           )}
                           <span>Over 6 characters</span>
                         </div>
-                        <div className={`flex items-center gap-1.5 transition-colors duration-300 ${isPasswordFirstLetterUpper ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
-                          {isPasswordFirstLetterUpper ? (
+                        <div className={`flex items-center gap-1.5 transition-colors duration-300 ${hasPasswordUppercase ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
+                          {hasPasswordUppercase ? (
                             <svg className="w-3.5 h-3.5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                           ) : (
                             <div className="w-3.5 h-3.5 rounded-full border border-slate-300 flex items-center justify-center text-[10px] shrink-0 text-slate-300 font-bold">•</div>
                           )}
-                          <span>First letter capitalized</span>
+                          <span>Contains uppercase letter</span>
                         </div>
                         <div className={`flex items-center gap-1.5 transition-colors duration-300 ${hasPasswordNumber ? 'text-emerald-600 font-semibold' : 'text-slate-400'}`}>
                           {hasPasswordNumber ? (

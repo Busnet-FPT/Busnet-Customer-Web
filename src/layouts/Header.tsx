@@ -15,6 +15,7 @@ function Header() {
 
     const navLinks = [
         { name: 'Home', path: '/' },
+        { name: 'Trips', path: '/trips' },
         { name: 'Operators', path: '/operators' },
         { name: 'Booking', path: '/booking' },
         { name: 'Subscription', path: '/subscription' },
