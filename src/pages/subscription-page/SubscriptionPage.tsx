@@ -165,7 +165,7 @@ function SubscriptionPage() {
                     <h3 className="text-xl font-bold text-slate-900 text-center">
                       {plan.planName}
                     </h3>
-                    <p className="text-xs mt-1.5 font-secondary text-slate-450 leading-relaxed min-h-[36px]">
+                    <p className="text-xs mt-1.5 font-secondary text-slate-400 leading-relaxed min-h-[36px]">
                       {plan.description}
                     </p>
                   </div>
@@ -197,7 +197,7 @@ function SubscriptionPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                             </svg>
                           </span>
-                          <span className="text-slate-655 font-medium leading-relaxed">
+                          <span className="text-slate-600 font-medium leading-relaxed">
                             {feature}
                           </span>
                         </li>
@@ -280,7 +280,7 @@ function SubscriptionPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         ) : (
-                          <span className="text-slate-350 font-normal">—</span>
+                          <span className="text-slate-300 font-normal">—</span>
                         )
                       ) : (
                         row.pro

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import type { UserProfile } from '../services/profileService'
 
 function Header() {
     const location = useLocation()
@@ -7,8 +8,9 @@ function Header() {
     const [lang, setLang] = useState('EN')
     const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false)
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
-    const [user, setUser] = useState<any>(null)
+    const [user, setUser] = useState<UserProfile | null>(null)
     const [isScrolled, setIsScrolled] = useState(false)
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     const langDropdownRef = useRef<HTMLDivElement>(null)
     const userDropdownRef = useRef<HTMLDivElement>(null)
@@ -37,12 +39,14 @@ function Header() {
     }, [])
 
     const isTransparent = location.pathname === '/' && !isScrolled
+    const effectiveTransparent = isTransparent && !isMobileMenuOpen
 
     // Load user profile and monitor pathname changes
     useEffect(() => {
         const storedUser = localStorage.getItem('user')
         if (storedUser) {
             try {
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setUser(JSON.parse(storedUser))
             } catch (e) {
                 console.error(e)
@@ -50,6 +54,12 @@ function Header() {
         } else {
             setUser(null)
         }
+    }, [location.pathname])
+
+    // Close mobile menu on pathname change
+    useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setIsMobileMenuOpen(false)
     }, [location.pathname])
 
     // Close dropdowns on click outside
@@ -77,7 +87,7 @@ function Header() {
     }
 
     return (
-        <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 font-primary ${isTransparent
+        <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 font-primary ${effectiveTransparent
             ? 'bg-transparent border-b border-transparent shadow-none'
             : 'backdrop-blur-md bg-white/90 border-b border-slate-100 shadow-sm'
             }`}>
@@ -87,16 +97,16 @@ function Header() {
                     <img
                         src="/images/logo.jpg"
                         alt="BusNet Logo"
-                        className={`h-9 w-9 object-cover rounded-xl shadow-md border transition-all duration-300 group-hover:scale-105 ${isTransparent ? 'border-white/10' : 'border-slate-100'
+                        className={`h-9 w-9 object-cover rounded-xl shadow-md border transition-all duration-300 group-hover:scale-105 ${effectiveTransparent ? 'border-white/10' : 'border-slate-100'
                             }`}
                     />
-                    <span className={`brand-logo transition-colors duration-300 ${isTransparent ? 'text-white' : 'text-slate-900'
+                    <span className={`brand-logo transition-colors duration-300 ${effectiveTransparent ? 'text-white' : 'text-slate-900'
                         }`}>
                         Bus<span className="text-primary">Net</span>
                     </span>
                 </Link>
 
-                {/* Navigation Links */}
+                {/* Navigation Links (Desktop) */}
                 <nav className="hidden md:flex items-center gap-8 nav-link font-medium">
                     {navLinks.map((link) => {
                         const isActive = location.pathname === link.path
@@ -105,9 +115,9 @@ function Header() {
                                 key={link.path}
                                 to={link.path}
                                 className={`relative py-1 transition-colors duration-300 ${isActive
-                                    ? (isTransparent ? 'text-white font-bold' : 'text-primary')
-                                    : (isTransparent ? 'text-white/75 hover:text-white' : 'text-slate-600 hover:text-primary')
-                                    } after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-0.5 ${isTransparent ? 'after:bg-white' : 'after:bg-primary'
+                                    ? (effectiveTransparent ? 'text-white font-bold' : 'text-primary')
+                                    : (effectiveTransparent ? 'text-white/75 hover:text-white' : 'text-slate-600 hover:text-primary')
+                                    } after:content-[''] after:absolute after:bottom-0 after:left-0 after:h-0.5 ${effectiveTransparent ? 'after:bg-white' : 'after:bg-primary'
                                     } after:transition-all after:duration-300 ${isActive ? 'after:w-full' : 'after:w-0 hover:after:w-full'
                                     }`}
                             >
@@ -117,13 +127,13 @@ function Header() {
                     })}
                 </nav>
 
-                {/* Right Section: Language Dropdown & Auth CTA */}
+                {/* Right Section: Language Dropdown & Auth CTA & Hamburger Menu */}
                 <div className="flex items-center gap-4">
                     {/* Language Switcher */}
-                    <div className="relative" ref={langDropdownRef}>
+                    <div className="hidden md:block relative" ref={langDropdownRef}>
                         <button
                             onClick={() => setIsLangDropdownOpen(!isLangDropdownOpen)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all duration-200 text-xs font-bold font-primary active:scale-[0.97] cursor-pointer ${isTransparent
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all duration-200 text-xs font-bold font-primary active:scale-[0.97] cursor-pointer ${effectiveTransparent
                                 ? 'border-white/20 bg-white/10 hover:bg-white/20 text-white'
                                 : 'border-slate-200 hover:bg-slate-50 text-slate-700'
                                 }`}
@@ -143,7 +153,7 @@ function Header() {
                             </span>
                             <svg
                                 className={`w-3 h-3 transition-transform duration-200 ${isLangDropdownOpen ? 'rotate-180' : ''
-                                    } ${isTransparent ? 'text-white/80' : 'text-slate-400'}`}
+                                    } ${effectiveTransparent ? 'text-white/80' : 'text-slate-400'}`}
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -182,7 +192,7 @@ function Header() {
                     </div>
 
                     {/* Divider */}
-                    <span className={`h-5 w-px hidden sm:inline-block transition-colors duration-300 ${isTransparent ? 'bg-white/20' : 'bg-slate-200'
+                    <span className={`h-5 w-px hidden md:inline-block transition-colors duration-300 ${effectiveTransparent ? 'bg-white/20' : 'bg-slate-200'
                         }`}></span>
 
                     {/* Login Button or Avatar Dropdown */}
@@ -196,16 +206,16 @@ function Header() {
                                     <img
                                         src={user.profilePicture}
                                         alt={user.fullName}
-                                        className={`w-9 h-9 rounded-full object-cover border transition-all duration-300 ${isTransparent ? 'border-white/30 group-hover:border-white' : 'border-slate-200 group-hover:border-primary'
+                                        className={`w-9 h-9 rounded-full object-cover border transition-all duration-300 ${effectiveTransparent ? 'border-white/30 group-hover:border-white' : 'border-slate-200 group-hover:border-primary'
                                             }`}
                                         referrerPolicy="no-referrer"
                                     />
                                 ) : (
-                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 ${isTransparent
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm border transition-all duration-300 ${effectiveTransparent
                                         ? 'bg-white/10 text-white border-white/20 group-hover:border-white'
                                         : 'bg-primary/10 text-primary border-slate-200 group-hover:border-primary'
                                         }`}>
-                                        {user.fullName ? user.fullName.charAt(0).toUpperCase() : user.username.charAt(0).toUpperCase()}
+                                        {user.fullName ? user.fullName.charAt(0).toUpperCase() : (user.username?.charAt(0)?.toUpperCase() || 'U')}
                                     </div>
                                 )}
                             </button>
@@ -255,12 +265,14 @@ function Header() {
                             onClick={(e) => {
                                 if (location.pathname === '/verify-email') {
                                     e.preventDefault()
+                                } else {
+                                    setIsMobileMenuOpen(false)
                                 }
                             }}
                             className={`rounded-xl px-5 py-2 text-xs font-bold font-primary transition-all duration-300 active:scale-[0.97] inline-block text-center cursor-pointer ${
                                 location.pathname === '/verify-email'
                                     ? 'bg-slate-100 text-slate-400 border border-slate-200 pointer-events-none cursor-not-allowed shadow-none'
-                                    : isTransparent
+                                    : effectiveTransparent
                                         ? 'border border-white/30 text-white bg-white/5 hover:bg-white hover:text-slate-900 hover:border-white shadow-none'
                                         : 'bg-primary text-white hover:bg-blue-600 shadow-md shadow-primary/15 hover:shadow-lg hover:shadow-primary/25'
                             }`}
@@ -268,8 +280,89 @@ function Header() {
                             Sign In
                         </Link>
                     )}
+
+                    {/* Mobile Menu Button (Hamburger) */}
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className={`block md:hidden p-2 rounded-xl border transition-all duration-200 active:scale-[0.95] cursor-pointer ${
+                            effectiveTransparent
+                                ? 'border-white/20 bg-white/10 text-white hover:bg-white/20'
+                                : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                        }`}
+                        aria-label="Toggle Menu"
+                    >
+                        {isMobileMenuOpen ? (
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        ) : (
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        )}
+                    </button>
                 </div>
             </div>
+
+            {/* Mobile Navigation Drawer */}
+            {isMobileMenuOpen && (
+                <div className="md:hidden border-t border-slate-100 bg-white shadow-lg animate-fade-in py-4 px-4 space-y-3 max-h-[70vh] overflow-y-auto">
+                    <nav className="flex flex-col gap-2">
+                        {navLinks.map((link) => {
+                            const isActive = location.pathname === link.path
+                            return (
+                                <Link
+                                    key={link.path}
+                                    to={link.path}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                                        isActive
+                                            ? 'bg-primary/10 text-primary font-bold'
+                                            : 'text-slate-600 hover:bg-slate-50 hover:text-primary'
+                                    }`}
+                                >
+                                    {link.name}
+                                </Link>
+                            )
+                        })}
+                    </nav>
+
+                    {/* Language Selector in Mobile Menu */}
+                    <div className="border-t border-slate-100 pt-4 mt-2">
+                        <p className="px-4 text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 font-primary">Language</p>
+                        <div className="flex gap-2 px-4">
+                            <button
+                                onClick={() => {
+                                    setLang('VI')
+                                    setIsMobileMenuOpen(false)
+                                }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-xs font-bold font-primary transition-all duration-200 cursor-pointer ${
+                                    lang === 'VI'
+                                        ? 'bg-primary/10 text-primary border-primary shadow-sm shadow-primary/5'
+                                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                                }`}
+                            >
+                                <span className="text-sm leading-none">🇻🇳</span>
+                                <span>Tiếng Việt</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setLang('EN')
+                                    setIsMobileMenuOpen(false)
+                                }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-xs font-bold font-primary transition-all duration-200 cursor-pointer ${
+                                    lang === 'EN'
+                                        ? 'bg-primary/10 text-primary border-primary shadow-sm shadow-primary/5'
+                                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                                }`}
+                            >
+                                <span className="text-sm leading-none">🇺🇸</span>
+                                <span>English</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </header>
     )
 }
