@@ -210,14 +210,14 @@ function SubscriptionPage() {
                 <div className="mt-8 pt-4">
                   {isPro ? (
                     <Link
-                      to="/register/operator"
+                      to={`/register/operator?planId=${plan._id}`}
                       className="w-full py-3 px-4 rounded-xl text-center text-xs font-extrabold uppercase tracking-wider block transition-all duration-300 active:scale-[0.98] bg-primary hover:bg-blue-600 text-white shadow-lg shadow-primary/20 hover:shadow-primary/35"
                     >
                       Get Started
                     </Link>
                   ) : (
                     <Link
-                      to="/register/operator"
+                      to={`/register/operator?planId=${plan._id}`}
                       className="w-full py-3 px-4 rounded-xl text-center text-xs font-extrabold uppercase tracking-wider block transition-all duration-300 active:scale-[0.98] border border-primary text-primary hover:bg-primary/5"
                     >
                       Get Started
