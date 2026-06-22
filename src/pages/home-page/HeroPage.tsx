@@ -1,5 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getSearchLocations } from '../../services/tripService'
+
+const VIETNAM_LOCATIONS = [
+  "An Giang", "Bà Rịa - Vũng Tàu", "Bạc Liêu", "Bắc Giang", "Bắc Kạn", "Bắc Ninh", "Bến Tre", "Bình Dương", "Bình Định", "Bình Phước", "Bình Thuận", "Cà Mau", "Cao Bằng", "Cần Thơ", "Đà Nẵng", "Đắk Lắk", "Đắk Nông", "Điện Biên", "Đồng Nai", "Đồng Tháp", "Gia Lai", "Hà Giang", "Hà Nam", "Hà Nội", "Hà Tĩnh", "Hải Dương", "Hải Phòng", "Hậu Giang", "Hòa Bình", "Hưng Yên", "Khánh Hòa", "Nha Trang", "Kiên Giang", "Rạch Giá", "Phu Quốc", "Kon Tum", "Lai Châu", "Lạng Sơn", "Lào Cai", "Sapa", "Lâm Đồng", "Đà Lạt", "Long An", "Nam Định", "Nghệ An", "Vinh", "Ninh Bình", "Ninh Thuận", "Phú Thọ", "Phú Yên", "Tuy Hòa", "Quảng Bình", "Đồng Hới", "Quảng Nam", "Hội An", "Quảng Ngãi", "Quảng Ninh", "Hạ Long", "Quảng Trị", "Sóc Trăng", "Sơn La", "Tây Ninh", "Thái Bình", "Thái Nguyên", "Thanh Hóa", "Thừa Thiên Huế", "Huế", "Tiền Giang", "Hồ Chí Minh", "Trà Vinh", "Tuyên Quang", "Vĩnh Long", "Vĩnh Phúc", "Yên Bái"
+]
 
 function HeroPage() {
   const navigate = useNavigate()
@@ -8,14 +13,83 @@ function HeroPage() {
   const [date, setDate] = useState('')
   const [isMuted, setIsMuted] = useState(true)
 
+  const [origins, setOrigins] = useState<string[]>([])
+  const [destinations, setDestinations] = useState<string[]>([])
+  const [filteredOrigins, setFilteredOrigins] = useState<string[]>([])
+  const [filteredDestinations, setFilteredDestinations] = useState<string[]>([])
+  const [showOrigins, setShowOrigins] = useState(false)
+  const [showDestinations, setShowDestinations] = useState(false)
+
+  const cleanStr = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const data = await getSearchLocations()
+        setOrigins(data.origins)
+        setDestinations(data.destinations)
+      } catch (err) {
+        console.error('Failed to load search locations', err)
+      }
+    }
+    fetchLocations()
+  }, [])
+
+  useEffect(() => {
+    const query = cleanStr(from.trim())
+    let filtered = VIETNAM_LOCATIONS
+    if (query) {
+      filtered = VIETNAM_LOCATIONS.filter(loc => cleanStr(loc).includes(query))
+    }
+    setFilteredOrigins(filtered)
+  }, [from])
+
+  useEffect(() => {
+    const query = cleanStr(to.trim())
+    let filtered = VIETNAM_LOCATIONS
+    if (query) {
+      filtered = VIETNAM_LOCATIONS.filter(loc => cleanStr(loc).includes(query))
+    }
+    setFilteredDestinations(filtered)
+  }, [to])
+
+  const isLocationActive = (locName: string, activeList: string[]) => {
+    const cleanLoc = cleanStr(locName)
+    return activeList.some(item => {
+      const cleanItem = cleanStr(item)
+      return cleanItem.includes(cleanLoc) || cleanLoc.includes(cleanItem)
+    })
+  }
+
+  const handleSwap = () => {
+    const temp = from
+    setFrom(to)
+    setTo(temp)
+  }
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
+<<<<<<< HEAD
 
     const params = new URLSearchParams()
     if (from.trim()) params.set('originProvince', from.trim())
     if (to.trim()) params.set('destinationProvince', to.trim())
     if (date) params.set('departureDate', date)
 
+=======
+    if (!date) {
+      alert('Please select a Departure Date.')
+      return
+    }
+    if (from.trim() && to.trim() && from.trim().toLowerCase() === to.trim().toLowerCase()) {
+      alert('Origin and destination cannot be the same.')
+      return
+    }
+    const params = new URLSearchParams()
+    if (from.trim()) params.append('from', from.trim())
+    if (to.trim()) params.append('to', to.trim())
+    params.append('date', date)
+>>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
     navigate(`/trips?${params.toString()}`)
   }
 
@@ -105,7 +179,7 @@ function HeroPage() {
         >
           <form onSubmit={handleSearch} className="grid gap-3.5 sm:grid-cols-2 md:grid-cols-4 items-end text-left">
             {/* From Field */}
-            <div className="space-y-1">
+            <div className="relative space-y-1">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1 font-primary">
                 <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -117,14 +191,55 @@ function HeroPage() {
                 type="text"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
+                onFocus={() => setShowOrigins(true)}
+                onBlur={() => setTimeout(() => setShowOrigins(false), 200)}
                 placeholder="e.g. Ho Chi Minh City"
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-body text-slate-800 outline-none transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/10 font-medium placeholder-slate-400 font-secondary"
-                required
               />
+              {/* Suggestions dropdown */}
+              {showOrigins && filteredOrigins.length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-1.5 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl z-30 py-1">
+                  {filteredOrigins.map((item) => {
+                    const active = isLocationActive(item, origins)
+                    return active ? (
+                      <button
+                        key={item}
+                        type="button"
+                        onMouseDown={() => {
+                          setFrom(item)
+                          setShowOrigins(false)
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer"
+                      >
+                        <span>📍 {item}</span>
+                        <span className="text-[9px] font-extrabold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md uppercase">Active</span>
+                      </button>
+                    ) : (
+                      <div
+                        key={item}
+                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-400 opacity-60 flex items-center justify-between cursor-not-allowed select-none bg-slate-50/20"
+                        title="No routes available for this location"
+                      >
+                        <span>📍 {item}</span>
+                        <span className="text-[9px] font-extrabold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md uppercase">Unavailable</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+              {/* Desktop Swap Button */}
+              <button
+                type="button"
+                onClick={handleSwap}
+                className="absolute right-[-17px] top-[34px] z-20 hidden md:flex items-center justify-center w-8 h-8 rounded-full bg-white border border-slate-200 text-slate-600 shadow-md hover:text-primary hover:border-primary hover:shadow-lg transition-all cursor-pointer active:scale-90 font-bold"
+                title="Swap Locations"
+              >
+                ⇄
+              </button>
             </div>
 
             {/* To Field */}
-            <div className="space-y-1">
+            <div className="relative space-y-1">
               <label className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1 font-primary">
                 <svg className="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -136,10 +251,42 @@ function HeroPage() {
                 type="text"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
+                onFocus={() => setShowDestinations(true)}
+                onBlur={() => setTimeout(() => setShowDestinations(false), 200)}
                 placeholder="e.g. Da Lat"
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-body text-slate-800 outline-none transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/10 font-medium placeholder-slate-400 font-secondary"
-                required
               />
+              {/* Suggestions dropdown */}
+              {showDestinations && filteredDestinations.length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-1.5 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl z-30 py-1">
+                  {filteredDestinations.map((item) => {
+                    const active = isLocationActive(item, destinations)
+                    return active ? (
+                      <button
+                        key={item}
+                        type="button"
+                        onMouseDown={() => {
+                          setTo(item)
+                          setShowDestinations(false)
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer"
+                      >
+                        <span>📍 {item}</span>
+                        <span className="text-[9px] font-extrabold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-md uppercase">Active</span>
+                      </button>
+                    ) : (
+                      <div
+                        key={item}
+                        className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-400 opacity-60 flex items-center justify-between cursor-not-allowed select-none bg-slate-50/20"
+                        title="No routes available for this location"
+                      >
+                        <span>📍 {item}</span>
+                        <span className="text-[9px] font-extrabold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md uppercase">Unavailable</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Departure Date Field */}
@@ -154,6 +301,7 @@ function HeroPage() {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-body text-slate-800 outline-none transition-all duration-200 focus:border-primary focus:ring-2 focus:ring-primary/10 font-medium font-secondary"
                 required
               />

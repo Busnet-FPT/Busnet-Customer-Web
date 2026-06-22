@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { loginWithGoogle, loginCustomer } from '../../services/authService'
 import { useAuth } from '../../contexts/AuthContext'
 import axios from 'axios'
+import { toast } from 'react-hot-toast'
 
 declare global {
   interface Window {
@@ -31,13 +32,23 @@ function LoginPage() {
 
     try {
       const result = await loginWithGoogle(idToken)
+<<<<<<< HEAD
       login(result.data.account, result.data.token)
+=======
+      localStorage.setItem('token', result.data.token)
+      localStorage.setItem('user', JSON.stringify(result.data.account))
+      toast.success('Signed in successfully!')
+>>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
       navigate('/')
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
-        setApiError(error.response.data.message || 'Google login failed. Please try again.')
+        const errMsg = error.response.data.message || 'Google login failed. Please try again.'
+        setApiError(errMsg)
+        toast.error(errMsg)
       } else {
-        setApiError('Unable to connect to server. Please try again later.')
+        const errMsg = 'Unable to connect to server. Please try again later.'
+        setApiError(errMsg)
+        toast.error(errMsg)
       }
     } finally {
       setIsLoading(false)
@@ -96,7 +107,13 @@ function LoginPage() {
           identifier: email.trim(),
           password: password
         })
+<<<<<<< HEAD
         login(result.data.account, result.data.token)
+=======
+        localStorage.setItem('token', result.data.token)
+        localStorage.setItem('user', JSON.stringify(result.data.account))
+        toast.success('Login successful!')
+>>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
         navigate('/')
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.data) {
