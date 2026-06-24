@@ -122,6 +122,7 @@ export interface BookingInfo {
   dropoffPoint_name?: string
   dropoffPoint_address?: string
   dropoffPoint_time?: string
+  customerNote?: string
 }
 
 export interface PaymentInfo {
