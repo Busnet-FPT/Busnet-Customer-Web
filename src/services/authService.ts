@@ -153,12 +153,6 @@ export interface RegisterOperatorData {
   phone: string
   operatorName: string
   taxCode: string
-  bankName: string
-  bankNumber: string
-  bankAccountName: string
-  bankBranch?: string
-  sepayVa: string
-  sepayKey: string
   planId: string
   operatorPhone?: string
   description?: string
@@ -171,9 +165,10 @@ export interface RegisterOperatorData {
   }
   profilePicture?: string
   coverImage?: string
+  businessLicense?: string
 }
 
-export interface RegisterOperatorResponse {
+export interface SubmitRegistrationResponse {
   success: boolean
   message: string
   data: {
@@ -189,14 +184,67 @@ export interface RegisterOperatorResponse {
       _id: string
       operatorName: string
       taxCode: string
-      sepayVa: string
+      licenseStatus: string
     }
+  }
+}
+
+export interface ContinueRegistrationResponse {
+  success: boolean
+  message: string
+  data: {
+    accountStatus: string
+    licenseStatus: 'PENDING' | 'APPROVED' | 'REJECTED'
+    rejectionReason: string | null
+    account: {
+      _id: string
+      email: string
+      phone: string
+      fullName: string
+    }
+    partnerInfo: {
+      _id: string
+      operatorName: string
+      businessLicense: string
+      selectedPlanId: string
+    }
+  }
+}
+
+export interface CompletePaymentData {
+  email: string
+  password: string
+  bankName: string
+  bankNumber: string
+  bankAccountName: string
+  bankBranch?: string
+  sepayVa: string
+  sepayKey: string
+}
+
+export interface CompletePaymentResponse {
+  success: boolean
+  message: string
+  data: {
     transaction: {
       _id: string
       amount: number
       content: string
       status: string
       qrUrl: string
+    }
+  }
+}
+
+export interface ResubmitLicenseResponse {
+  success: boolean
+  message: string
+  data: {
+    partnerInfo: {
+      _id: string
+      operatorName: string
+      businessLicense: string
+      licenseStatus: string
     }
   }
 }
@@ -212,11 +260,38 @@ export interface SubscriptionStatusResponse {
 }
 
 /**
- * Register a new partner/operator account
+ * Phase 1: Submit operator registration (Plan + Profile + License)
  * POST /api/partner/auth/register
  */
-export const registerOperator = async (data: RegisterOperatorData): Promise<RegisterOperatorResponse> => {
-  const response = await api.post<RegisterOperatorResponse>('/partner/auth/register', data)
+export const submitOperatorRegistration = async (data: RegisterOperatorData): Promise<SubmitRegistrationResponse> => {
+  const response = await api.post<SubmitRegistrationResponse>('/partner/auth/register', data)
+  return response.data
+}
+
+/**
+ * Continue registration - verify identity and check status
+ * POST /api/partner/auth/continue-registration
+ */
+export const continueOperatorRegistration = async (email: string, password: string): Promise<ContinueRegistrationResponse> => {
+  const response = await api.post<ContinueRegistrationResponse>('/partner/auth/continue-registration', { email, password })
+  return response.data
+}
+
+/**
+ * Phase 2: Complete payment (SePay config + create Transaction)
+ * POST /api/partner/auth/complete-payment
+ */
+export const completeOperatorPayment = async (data: CompletePaymentData): Promise<CompletePaymentResponse> => {
+  const response = await api.post<CompletePaymentResponse>('/partner/auth/complete-payment', data)
+  return response.data
+}
+
+/**
+ * Resubmit business license after rejection
+ * POST /api/partner/auth/resubmit-license
+ */
+export const resubmitLicense = async (email: string, password: string, businessLicense: string): Promise<ResubmitLicenseResponse> => {
+  const response = await api.post<ResubmitLicenseResponse>('/partner/auth/resubmit-license', { email, password, businessLicense })
   return response.data
 }
 
@@ -254,3 +329,4 @@ export const uploadImage = async (file: File, folder?: string): Promise<UploadRe
   )
   return response.data
 }
+

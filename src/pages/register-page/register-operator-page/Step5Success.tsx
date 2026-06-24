@@ -52,7 +52,7 @@ const Step5Success: React.FC<Step5SuccessProps> = ({ email, operatorName, sepayV
       <div className="relative">
         <div className="absolute inset-0 rounded-full bg-emerald-100/60 animate-ping opacity-75"></div>
         <div className="relative w-24 h-24 rounded-full bg-linear-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20 border-4 border-white">
-          <svg className="w-12 h-12 stroke-white stroke-3 fill-none" viewBox="0 0 24 24">
+          <svg className="w-12 h-12 stroke-white stroke-2 fill-none" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -64,7 +64,8 @@ const Step5Success: React.FC<Step5SuccessProps> = ({ email, operatorName, sepayV
           Registration Successful!
         </h1>
         <p className="text-[14px] text-slate-500 font-secondary max-w-md mx-auto leading-relaxed">
-          Your partner workspace has been activated. A confirmation email with account details has been sent to{' '}
+          Congratulations, <span className="text-slate-900 font-semibold">{operatorName}</span>! Your operator registration is complete, and payment was successfully received.
+          A confirmation has been sent to{' '}
           <span className="text-slate-900 font-semibold bg-slate-100 px-2 py-0.5 rounded-md">{email}</span>.
         </p>
       </div>
@@ -137,20 +138,25 @@ const Step5Success: React.FC<Step5SuccessProps> = ({ email, operatorName, sepayV
         </div>
       </div>
 
-      {/* Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md font-primary pt-4">
-        <Link
-          to="/login"
-          className="flex-1 rounded-full btn-premium-gradient py-3 text-[14px] font-extrabold text-white text-center shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
-        >
-          SIGN IN TO DASHBOARD
-        </Link>
-        <Link
-          to="/"
-          className="flex-1 rounded-full border border-slate-200 bg-white text-slate-700 py-3 text-[14px] font-extrabold text-center hover:bg-slate-50 hover:border-slate-300 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 shadow-sm"
-        >
-          RETURN HOME
-        </Link>
+      {/* Buttons & Explanatory Banner */}
+      <div className="w-full max-w-xl font-primary pt-4 text-center space-y-6">
+        <div className="p-4 bg-emerald-50/60 border border-emerald-100/50 rounded-2xl text-[13px] text-emerald-700 font-semibold leading-relaxed">
+          🎉 Welcome to BusNet! Your account is now fully active. You can log in to the Partner Dashboard using your registered email and password to start managing your fleet and routes.
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4 w-full">
+          <a
+            href="http://localhost:5173/login"
+            className="flex-1 rounded-full bg-linear-to-r from-emerald-600 to-teal-500 py-3.5 text-[14px] font-extrabold text-white text-center shadow-lg shadow-emerald-550/20 hover:shadow-xl hover:shadow-emerald-550/30 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
+          >
+            GO TO DASHBOARD
+          </a>
+          <Link
+            to="/"
+            className="flex-1 rounded-full border border-slate-200 bg-white py-3.5 text-[14px] font-extrabold text-slate-700 text-center shadow-sm hover:bg-slate-50 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
+          >
+            RETURN HOME
+          </Link>
+        </div>
       </div>
     </div>
   )
