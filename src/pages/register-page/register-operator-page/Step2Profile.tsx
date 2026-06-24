@@ -135,7 +135,7 @@ const Step2Profile: React.FC<Step2ProfileProps> = ({
       return !!(errors.fullName || errors.phone || errors.email || errors.password || errors.confirmPassword)
     }
     if (tab === 'company') {
-      return !!(errors.operatorName || errors.taxCode || errors.operatorPhone || errors.description)
+      return !!(errors.operatorName || errors.taxCode || errors.operatorPhone || errors.description || errors.businessLicense)
     }
     if (tab === 'branding') {
       return !!(errors.profilePicture || errors.coverImage)
@@ -389,6 +389,8 @@ const Step2Profile: React.FC<Step2ProfileProps> = ({
                 <p className="text-red-500 text-[13px] pl-2 font-secondary mt-0.5">{errors.taxCode}</p>
               )}
             </div>
+
+
 
             {/* Description */}
             <div className="sm:col-span-2 space-y-1.5">
