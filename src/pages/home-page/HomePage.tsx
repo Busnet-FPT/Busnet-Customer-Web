@@ -1,6 +1,7 @@
 import HeroPage from './HeroPage'
 import OperatorSection from './OperatorSection'
 import BlogSection from './BlogSection'
+import ContactSection from './ContactSection'
 
 function HomePage() {
   return (
@@ -8,6 +9,7 @@ function HomePage() {
       <HeroPage />
       <OperatorSection />
       <BlogSection />
+      <ContactSection />
     </div>
   )
 }
