@@ -12,14 +12,6 @@ function formatCurrency(value: number) {
   })
 }
 
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  })
-}
-
 type TabType = 'ALL' | 'PENDING' | 'PAID' | 'CANCELLED' | 'EXPIRED'
 
 function MyBookingsPage() {
@@ -119,7 +111,6 @@ function MyBookingsPage() {
   // Render Status Badge helper
   const renderStatusBadges = (b: BookingHistoryItem) => {
     const status = b.status
-    const payment = b.paymentStatus
 
     let statusText = status
     let statusClass = 'bg-slate-100 text-slate-600 border-slate-200'
@@ -138,30 +129,10 @@ function MyBookingsPage() {
       statusClass = 'bg-rose-50 text-rose-600 border-rose-200/50'
     }
 
-    let paymentText = payment
-    let paymentClass = 'bg-slate-100 text-slate-600 border-slate-200'
-
-    if (payment === 'PENDING') {
-      paymentText = 'Unpaid'
-      paymentClass = 'bg-amber-50 text-amber-600 border-amber-200/50'
-    } else if (payment === 'PAID' || payment === 'SUCCESS') {
-      paymentText = 'Paid'
-      paymentClass = 'bg-emerald-50 text-emerald-600 border-emerald-200/50'
-    } else if (payment === 'EXPIRED') {
-      paymentText = 'Expired'
-      paymentClass = 'bg-rose-50 text-rose-600 border-rose-200/50'
-    } else if (payment === 'CANCELLED') {
-      paymentText = 'Cancelled'
-      paymentClass = 'bg-rose-50 text-rose-600 border-rose-200/50'
-    }
-
     return (
       <div className="flex gap-2 flex-wrap">
         <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-lg border tracking-wide ${statusClass}`}>
           Ticket: {statusText}
-        </span>
-        <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-lg border tracking-wide ${paymentClass}`}>
-          Payment: {paymentText}
         </span>
       </div>
     )
@@ -189,11 +160,10 @@ function MyBookingsPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as TabType)}
-              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === tab.id
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'text-slate-550 hover:bg-slate-50'
-              }`}
+              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap cursor-pointer ${activeTab === tab.id
+                ? 'bg-primary text-white shadow-sm'
+                : 'text-slate-550 hover:bg-slate-50'
+                }`}
             >
               {tab.label}
             </button>
@@ -227,8 +197,6 @@ function MyBookingsPage() {
             {filteredBookings.map((b) => {
               const routeName = b.trip?.route?.routeName || 'Unnamed Route'
               const operatorName = b.trip?.operator?.operatorName || 'BusNet Operator'
-              const depDate = b.trip?.departureDate ? formatDate(b.trip.departureDate) : ''
-              const depTime = b.trip?.departureTime || ''
 
               const isPending = b.paymentStatus === 'PENDING' && b.status !== 'CANCELLED_BY_CUSTOMER' && b.status !== 'CANCELLED_BY_OPERATOR'
               const isPaid = b.paymentStatus === 'PAID' || b.paymentStatus === 'SUCCESS' || b.status === 'CONFIRMED' || b.status === 'COMPLETED'
@@ -255,9 +223,9 @@ function MyBookingsPage() {
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-[11px] text-slate-500 font-semibold border-t border-slate-100/60 pt-3">
-                      <p>Departure: <span className="text-slate-800 font-bold">{depTime || '—'}</span></p>
-                      <p>Date: <span className="text-slate-800 font-bold">{depDate || '—'}</span></p>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px] text-slate-500 font-semibold border-t border-slate-100/60 pt-3">
+                      <p>Passenger: <span className="text-slate-800 font-bold">{b.passengerName || '—'}</span></p>
+                      <p>Phone: <span className="text-slate-800 font-bold">{b.passengerPhone || '—'}</span></p>
                     </div>
                   </div>
 
