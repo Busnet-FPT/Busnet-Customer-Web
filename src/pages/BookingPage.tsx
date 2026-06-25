@@ -41,7 +41,7 @@ function getErrorMessage(error: unknown) {
 // Local mock of useAuth reading from localStorage
 function useAuth() {
   const [user, setUser] = useState<any>(null)
-  
+
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('user') || localStorage.getItem('account')
@@ -52,7 +52,7 @@ function useAuth() {
       console.error('Error parsing user from localStorage', e)
     }
   }, [])
-  
+
   return { user }
 }
 
@@ -241,23 +241,20 @@ function BookingPage() {
             {/* Step Stepper Progress Bar */}
             <div className="flex items-center justify-between max-w-md mx-auto mb-8 font-primary">
               <div className="flex items-center gap-2">
-                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${
-                  step === 1 ? 'bg-blue-500 text-white shadow-md shadow-blue-500/25' : 'bg-white border border-slate-200 text-slate-500'
-                }`}>1</span>
+                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${step === 1 ? 'bg-blue-500 text-white shadow-md shadow-blue-500/25' : 'bg-white border border-slate-200 text-slate-500'
+                  }`}>1</span>
                 <span className={`text-xs font-bold transition-all duration-300 ${step === 1 ? 'text-slate-800' : 'text-slate-400'}`}>Select Seat</span>
               </div>
               <div className="flex-1 h-0.5 bg-slate-200 mx-3" />
               <div className="flex items-center gap-2">
-                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${
-                  step === 2 ? 'bg-blue-500 text-white shadow-md shadow-blue-500/25' : 'bg-white border border-slate-200 text-slate-500'
-                }`}>2</span>
+                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${step === 2 ? 'bg-blue-500 text-white shadow-md shadow-blue-500/25' : 'bg-white border border-slate-200 text-slate-500'
+                  }`}>2</span>
                 <span className={`text-xs font-bold transition-all duration-300 ${step === 2 ? 'text-slate-800' : 'text-slate-400'}`}>Passenger Info</span>
               </div>
               <div className="flex-1 h-0.5 bg-slate-200 mx-3" />
               <div className="flex items-center gap-2">
-                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${
-                  step === 3 ? 'bg-blue-500 text-white shadow-md shadow-blue-500/25' : 'bg-white border border-slate-200 text-slate-500'
-                }`}>3</span>
+                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${step === 3 ? 'bg-blue-500 text-white shadow-md shadow-blue-500/25' : 'bg-white border border-slate-200 text-slate-500'
+                  }`}>3</span>
                 <span className={`text-xs font-bold transition-all duration-300 ${step === 3 ? 'text-slate-800' : 'text-slate-400'}`}>Confirm</span>
               </div>
             </div>
@@ -273,7 +270,7 @@ function BookingPage() {
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <span className="text-xs font-extrabold px-3 py-1.5 bg-slate-100 rounded-lg text-slate-600">
-                  🚍 {trip.bus?.busName || 'Premium Bus'}
+                  {trip.bus?.busName || 'Premium Bus'}
                 </span>
                 <span className="text-xs font-extrabold px-3 py-1.5 bg-blue-50 text-blue-500 rounded-lg">
                   {trip.availableSeats} seats available
@@ -300,10 +297,10 @@ function BookingPage() {
                     </div>
 
                     {/* Steer/Driver visual representation */}
-                    <div className="max-w-xs mx-auto mb-6 bg-slate-50/70 border border-slate-100 rounded-2xl py-3 px-4 flex justify-between items-center text-slate-400">
+                    {/* <div className="max-w-xs mx-auto mb-6 bg-slate-50/70 border border-slate-100 rounded-2xl py-3 px-4 flex justify-between items-center text-slate-400">
                       <span className="text-xs font-bold tracking-wider font-primary">Front</span>
                       <span className="text-xl">☸️ Driver</span>
-                    </div>
+                    </div> */}
 
                     {/* Seat Grid Map */}
                     <div className="max-w-xs mx-auto bg-slate-50/50 border border-slate-200/60 rounded-3xl p-6 shadow-inner">
@@ -320,15 +317,14 @@ function BookingPage() {
                               type="button"
                               disabled={!isAvailable}
                               onClick={() => toggleSeat(seat.seatCode)}
-                              className={`h-11 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                                isBooked
-                                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-200'
-                                  : isHeld
-                                    ? 'bg-amber-100 text-amber-600 border border-amber-200 cursor-not-allowed'
-                                    : isSelected
-                                      ? 'bg-blue-500 text-white border border-blue-500 shadow-md shadow-blue-500/20 scale-105'
-                                      : 'bg-white text-slate-700 border border-slate-200 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50/10'
-                              }`}
+                              className={`h-11 rounded-xl text-xs font-bold transition-all cursor-pointer ${isBooked
+                                ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-200'
+                                : isHeld
+                                  ? 'bg-amber-100 text-amber-600 border border-amber-200 cursor-not-allowed'
+                                  : isSelected
+                                    ? 'bg-blue-500 text-white border border-blue-500 shadow-md shadow-blue-500/20 scale-105'
+                                    : 'bg-white text-slate-700 border border-slate-200 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50/10'
+                                }`}
                               title={seat.seatCode + ` - ${formatCurrency(seat.price)}`}
                             >
                               {seat.seatCode}
@@ -437,12 +433,12 @@ function BookingPage() {
                         {/* Pickup fields */}
                         <div className="p-4 bg-slate-50/50 border border-slate-200/50 rounded-2xl space-y-3">
                           <p className="text-xs font-black text-slate-800 font-primary border-b border-slate-100 pb-2 flex items-center gap-1.5">
-                            📍 Pickup Point
+                            Pickup Point
                           </p>
                           {pickupPointsOptions.length > 0 ? (
                             <div>
                               <label className="text-[9px] font-extrabold uppercase text-slate-400 block mb-1">Select Location</label>
-                              <select 
+                              <select
                                 value={`${pickupName}|${pickupTime}`}
                                 onChange={(e) => {
                                   const [n, t] = e.target.value.split('|')
@@ -504,12 +500,12 @@ function BookingPage() {
                         {/* Dropoff fields */}
                         <div className="p-4 bg-slate-50/50 border border-slate-200/50 rounded-2xl space-y-3">
                           <p className="text-xs font-black text-slate-800 font-primary border-b border-slate-100 pb-2 flex items-center gap-1.5">
-                            📍 Dropoff Point
+                            Dropoff Point
                           </p>
                           {dropoffPointsOptions.length > 0 ? (
                             <div>
                               <label className="text-[9px] font-extrabold uppercase text-slate-400 block mb-1">Select Location</label>
-                              <select 
+                              <select
                                 value={`${dropoffName}|${dropoffTime}`}
                                 onChange={(e) => {
                                   const [n, t] = e.target.value.split('|')

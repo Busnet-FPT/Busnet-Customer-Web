@@ -22,7 +22,8 @@ function MyReportsPage() {
     setError('')
     try {
       const response = await getReports()
-      setReports(response.data.data || [])
+      const data = response.data.data as any
+      setReports(data.reports || [])
     } catch (err) {
       console.error(err)
       setError('Unable to load reports. Please try again later.')

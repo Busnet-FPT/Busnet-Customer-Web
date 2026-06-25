@@ -28,6 +28,7 @@ export interface UpdateProfileData {
   phone?: string
   gender?: string
   dob?: string | null
+  profilePicture?: File
 }
 
 export interface ChangePasswordData {
@@ -54,6 +55,22 @@ export const getProfile = async (): Promise<ProfileResponse> => {
  * PATCH /api/customer/profile/me
  */
 export const updateProfile = async (data: UpdateProfileData): Promise<ProfileResponse> => {
+  if (data.profilePicture instanceof File) {
+    const formData = new FormData()
+    if (data.fullName) formData.append('fullName', data.fullName)
+    if (data.phone) formData.append('phone', data.phone)
+    if (data.gender) formData.append('gender', data.gender)
+    if (data.dob !== undefined) formData.append('dob', data.dob || '')
+    formData.append('profilePicture', data.profilePicture)
+
+    const response = await api.patch<ProfileResponse>('/customer/profile/me', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  }
+
   const response = await api.patch<ProfileResponse>('/customer/profile/me', data)
   return response.data
 }

@@ -156,15 +156,6 @@ function BookingDetailPage() {
             }`}>
               Ticket: {booking.status === 'CONFIRMED' ? 'Confirmed' : booking.status === 'COMPLETED' ? 'Completed' : booking.status === 'PENDING_PAYMENT' ? 'Pending Payment' : booking.status}
             </span>
-            <span className={`px-3 py-1.5 rounded-xl border ${
-              isPaid
-                ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                : isCancelled || isExpired
-                  ? 'bg-rose-50 text-rose-600 border-rose-100'
-                  : 'bg-amber-50 text-amber-600 border-amber-100'
-            }`}>
-              Payment: {booking.paymentStatus === 'PAID' || booking.paymentStatus === 'SUCCESS' ? 'Paid' : booking.paymentStatus === 'PENDING' ? 'Pending' : booking.paymentStatus === 'EXPIRED' ? 'Expired' : booking.paymentStatus}
-            </span>
           </div>
         </div>
 

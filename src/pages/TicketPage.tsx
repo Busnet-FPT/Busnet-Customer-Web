@@ -211,11 +211,11 @@ function TicketPage() {
                 <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px] text-slate-500 font-semibold border-t border-slate-100 pt-3">
                   <div>
                     <span className="text-[9px] uppercase tracking-wider text-slate-400 font-primary block">Passenger:</span>
-                    <span className="text-slate-850 font-bold mt-0.5 block">{ticket.passengerName}</span>
+                    <span className="text-slate-850 font-bold mt-0.5 block">{ticket.passengerName || booking?.passengerName || 'Passenger'}</span>
                   </div>
                   <div>
                     <span className="text-[9px] uppercase tracking-wider text-slate-400 font-primary block">Phone Number:</span>
-                    <span className="text-slate-850 font-bold mt-0.5 block">{ticket.passengerPhone}</span>
+                    <span className="text-slate-850 font-bold mt-0.5 block">{ticket.passengerPhone || booking?.passengerPhone || 'N/A'}</span>
                   </div>
                   {booking?.pickupPoint_name && (
                     <div className="col-span-2 pt-2 border-t border-slate-50">
