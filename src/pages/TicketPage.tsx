@@ -190,7 +190,7 @@ function TicketPage() {
                 <div className="flex justify-between items-start gap-4">
                   <div>
                     <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block font-primary">Operator</span>
-                    <h3 className="text-base font-extrabold text-slate-800 font-primary mt-0.5">{trip.operator?.operatorName}</h3>
+                    <h3 className="text-base font-extrabold text-slate-800 font-primary mt-0.5">{(booking as any)?.partnerId?.fullName || trip.operator?.operatorName || 'BusNet Operator'}</h3>
                   </div>
                   <div className="text-right">
                     <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-widest block font-primary">Seat No</span>
@@ -200,9 +200,9 @@ function TicketPage() {
 
                 {/* Road Trip summary */}
                 <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl space-y-2">
-                  <p className="text-xs font-bold text-slate-800 font-primary">{trip.route?.routeName}</p>
+                  <p className="text-xs font-bold text-slate-800 font-primary">{(trip as any)?.routeId?.routeName || trip.route?.routeName || 'Unnamed Route'}</p>
                   <div className="grid grid-cols-2 gap-4 text-[11px] text-slate-500 font-semibold">
-                    <p>Departure: <span className="text-slate-800 font-bold">{trip.departureTime}</span></p>
+                    <p>Departure: <span className="text-slate-800 font-bold">{trip.departureTime || (trip as any)?.actualDepartureTime ? new Date((trip as any)?.actualDepartureTime * 60000).toISOString().substring(11, 16) : 'N/A'}</span></p>
                     <p>Date: <span className="text-slate-800 font-bold">{formatDate(trip.departureDate)}</span></p>
                   </div>
                 </div>

@@ -40,7 +40,7 @@ function BookingDetailPage() {
     try {
       const response = await getBookingDetail(bookingCode)
       setBooking(response.data.booking)
-      setTrip(response.data.trip)
+      setTrip(response.data.trip || (response.data.booking as any).tripId || null)
       setSeats(response.data.seats || [])
     } catch (err) {
       console.error(err)
@@ -169,19 +169,19 @@ function BookingDetailPage() {
               <div className="space-y-3 text-xs font-semibold text-slate-600">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Route:</span>
-                  <span className="text-slate-800 font-bold text-right">{trip.route?.routeName}</span>
+                  <span className="text-slate-800 font-bold text-right">{(trip as any)?.routeId?.routeName || trip.route?.routeName || 'Unnamed Route'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Operator:</span>
-                  <span className="text-slate-800 font-bold text-right">{trip.operator?.operatorName}</span>
+                  <span className="text-slate-800 font-bold text-right">{(booking as any)?.partnerId?.fullName || trip.operator?.operatorName || 'BusNet Operator'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Bus Type:</span>
-                  <span className="text-slate-800 font-bold text-right">{trip.bus?.busName} ({trip.bus?.licensePlate})</span>
+                  <span className="text-slate-800 font-bold text-right">{(trip as any)?.busId?.busName || trip.bus?.busName} ({(trip as any)?.busId?.licensePlate || trip.bus?.licensePlate})</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Departure Time:</span>
-                  <span className="text-slate-800 font-bold text-right">{trip.departureTime} • {formatDate(trip.departureDate)}</span>
+                  <span className="text-slate-800 font-bold text-right">{trip.departureTime || ((trip as any)?.actualDepartureTime != null ? new Date((trip as any)?.actualDepartureTime * 60000).toISOString().substring(11, 16) : 'N/A')} • {formatDate(trip.departureDate)}</span>
                 </div>
                 <div className="flex justify-between border-t border-slate-100 pt-3 text-slate-850 font-bold text-[13px]">
                   <span>Reserved Seats:</span>

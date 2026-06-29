@@ -62,13 +62,24 @@ export const updateProfile = async (data: UpdateProfileData): Promise<ProfileRes
     if (data.gender) formData.append('gender', data.gender)
     if (data.dob !== undefined) formData.append('dob', data.dob || '')
     formData.append('profilePicture', data.profilePicture)
-
-    const response = await api.patch<ProfileResponse>('/customer/profile/me', formData, {
+    
+    const token = localStorage.getItem('token')
+    const response = await fetch(api.defaults.baseURL + '/customer/profile/me', {
+      method: 'PATCH',
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Authorization': `Bearer ${token}`
       },
+      body: formData
     })
-    return response.data
+    const responseData = await response.json()
+    if (!response.ok) {
+      // Mock an AxiosError to keep compatibility with ProfilePage catch block
+      const err = new Error(responseData.message || 'Request failed') as any
+      err.isAxiosError = true
+      err.response = { data: responseData }
+      throw err
+    }
+    return responseData
   }
 
   const response = await api.patch<ProfileResponse>('/customer/profile/me', data)
