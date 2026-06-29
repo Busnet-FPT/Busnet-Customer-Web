@@ -195,8 +195,9 @@ function MyBookingsPage() {
         ) : (
           <div className="space-y-4">
             {filteredBookings.map((b) => {
-              const routeName = b.trip?.route?.routeName || 'Unnamed Route'
-              const operatorName = b.trip?.operator?.operatorName || 'BusNet Operator'
+              const anyB = b as any
+              const routeName = anyB.tripId?.routeId?.routeName || anyB.trip?.route?.routeName || 'Unnamed Route'
+              const operatorName = anyB.partnerId?.fullName || anyB.trip?.operator?.operatorName || 'BusNet Operator'
 
               const isPending = b.paymentStatus === 'PENDING' && b.status !== 'CANCELLED_BY_CUSTOMER' && b.status !== 'CANCELLED_BY_OPERATOR'
               const isPaid = b.paymentStatus === 'PAID' || b.paymentStatus === 'SUCCESS' || b.status === 'CONFIRMED' || b.status === 'COMPLETED'
@@ -204,14 +205,24 @@ function MyBookingsPage() {
               return (
                 <div
                   key={b.bookingId}
-                  onClick={() => navigate(`/my-bookings/${b.bookingCode}`)}
-                  className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row gap-5 items-stretch justify-between cursor-pointer hover:border-blue-200 group"
+                  onClick={() => {
+                    if (isPending) {
+                      navigate(`/payment/${b.bookingCode}`)
+                    } else if (isPaid) {
+                      navigate(`/my-bookings/${b.bookingCode}`)
+                    }
+                  }}
+                  className={`bg-white rounded-3xl border border-slate-200 p-5 shadow-xs transition-all duration-300 flex flex-col sm:flex-row gap-5 items-stretch justify-between group ${
+                    isPending || isPaid ? 'cursor-pointer hover:shadow-md hover:border-blue-200' : 'opacity-85'
+                  }`}
                 >
                   {/* Left Column: Trip summary */}
                   <div className="flex-1 space-y-3.5 flex flex-col justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-3 flex-wrap">
-                        <span className="text-xs font-black text-slate-800 font-primary group-hover:text-primary transition-colors">
+                        <span className={`text-xs font-black text-slate-800 font-primary transition-colors ${
+                          isPending || isPaid ? 'group-hover:text-primary' : ''
+                        }`}>
                           {routeName}
                         </span>
                         <span className="text-[10px] font-extrabold text-slate-450 bg-slate-100 border border-slate-200/50 px-2 py-0.5 rounded">
@@ -280,9 +291,6 @@ function MyBookingsPage() {
                             Download PDF
                           </button>
                         </>
-                      )}
-                      {!isPending && !isPaid && (
-                        <span className="text-[11px] font-bold text-slate-400">View Details ➔</span>
                       )}
                     </div>
                   </div>
