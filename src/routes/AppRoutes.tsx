@@ -10,6 +10,10 @@ const RegisterPassengerPage = lazy(() => import('../pages/register-page/Register
 const RegisterOperatorPage = lazy(() => import('../pages/register-page/register-operator-page/RegisterOperatorPage'))
 const TripsPage = lazy(() => import('../pages/TripsPage'))
 const BookingPage = lazy(() => import('../pages/BookingPage'))
+const PaymentPage = lazy(() => import('../pages/PaymentPage'))
+const TicketPage = lazy(() => import('../pages/TicketPage'))
+const MyBookingsPage = lazy(() => import('../pages/MyBookingsPage'))
+const BookingDetailPage = lazy(() => import('../pages/BookingDetailPage'))
 const ProfilePage = lazy(() => import('../pages/ProfilePage'))
 const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
 const SubscriptionPage = lazy(() => import('../pages/subscription-page/SubscriptionPage'))
@@ -18,6 +22,11 @@ const BlogDetailPage = lazy(() => import('../pages/blog-page/blog-detail-page/Bl
 const OperatorListPage = lazy(() => import('../pages/operator-page/OperatorListPage'))
 const OperatorDetailPage = lazy(() => import('../pages/operator-page/OperatorDetailPage'))
 const VerifyEmailPage = lazy(() => import('../pages/verify-page/VerifyEmailPage'))
+
+// New Features Routes
+const MyFavouritesPage = lazy(() => import('../pages/MyFavouritesPage'))
+const MyReportsPage = lazy(() => import('../pages/MyReportsPage'))
+const MyFeedbacksPage = lazy(() => import('../pages/MyFeedbacksPage'))
 
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>}>
@@ -69,8 +78,36 @@ export const router = createBrowserRouter([
         element: <SuspenseWrapper><RequireAuth><BookingPage /></RequireAuth></SuspenseWrapper>,
       },
       {
+        path: 'payment/:bookingCode',
+        element: <SuspenseWrapper><PaymentPage /></SuspenseWrapper>,
+      },
+      {
+        path: 'tickets/:bookingCode',
+        element: <SuspenseWrapper><TicketPage /></SuspenseWrapper>,
+      },
+      {
+        path: 'my-bookings',
+        element: <SuspenseWrapper><MyBookingsPage /></SuspenseWrapper>,
+      },
+      {
+        path: 'my-bookings/:bookingCode',
+        element: <SuspenseWrapper><BookingDetailPage /></SuspenseWrapper>,
+      },
+      {
         path: 'profile',
         element: <SuspenseWrapper><RequireAuth><ProfilePage /></RequireAuth></SuspenseWrapper>,
+      },
+      {
+        path: 'my-favourites',
+        element: <SuspenseWrapper><MyFavouritesPage /></SuspenseWrapper>,
+      },
+      {
+        path: 'my-reports',
+        element: <SuspenseWrapper><MyReportsPage /></SuspenseWrapper>,
+      },
+      {
+        path: 'my-feedbacks',
+        element: <SuspenseWrapper><MyFeedbacksPage /></SuspenseWrapper>,
       },
       {
         path: 'subscription',

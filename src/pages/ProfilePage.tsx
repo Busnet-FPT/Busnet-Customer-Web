@@ -38,6 +38,8 @@ function ProfilePage() {
   const [phone, setPhone] = useState('')
   const [gender, setGender] = useState('')
   const [dob, setDob] = useState('')
+  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null)
+  const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null)
 
   // Change password form state
   const [currentPassword, setCurrentPassword] = useState('')
@@ -65,12 +67,25 @@ function ProfilePage() {
       setPhone(accountData.phone || '')
       setGender(accountData.gender || 'OTHER')
       setDob(accountData.dob ? accountData.dob.split('T')[0] : '')
-      setUser(accountData)
+      setProfilePicturePreview(null)
+      setProfilePictureFile(null)
     } catch (err: any) {
       console.error('Error loading profile:', err)
       setInfoError('Could not fetch profile information. Please reload.')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setProfilePictureFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setProfilePicturePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
     }
   }
 
@@ -102,11 +117,14 @@ function ProfilePage() {
         fullName: fullName.trim(),
         phone: phone.trim() || undefined,
         gender: gender.toUpperCase(),
-        dob: dob || null
+        dob: dob || null,
+        profilePicture: profilePictureFile || undefined
       })
       const accountData = result.data.account || result.data
       setProfile(accountData)
-      setUser(accountData)
+      setProfilePictureFile(null)
+      // Sync to localStorage so Header updates
+      localStorage.setItem('user', JSON.stringify(accountData))
       setInfoSuccess('Profile updated successfully!')
     } catch (err: any) {
       if (axios.isAxiosError(err) && err.response?.data) {
@@ -207,17 +225,32 @@ function ProfilePage() {
         {/* Left Side: Avatar Card */}
         <div className="w-full md:w-[32%] bg-white rounded-3xl border border-slate-100 p-6 text-center space-y-5 shadow-sm">
           <div className="flex flex-col items-center">
-            {profile?.profilePicture ? (
-              <img
-                src={profile.profilePicture}
-                alt={profile.fullName}
-                className="w-24 h-24 rounded-2xl object-cover border-4 border-slate-50 shadow-md mb-4"
-              />
-            ) : (
-              <div className="w-24 h-24 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-extrabold text-3xl border border-primary/5 shadow-inner mb-4">
-                {profile?.fullName ? profile.fullName.charAt(0).toUpperCase() : (profile?.username?.charAt(0)?.toUpperCase() || 'U')}
+            <div
+              className="relative group cursor-pointer inline-block"
+              onClick={() => document.getElementById('profilePictureInput')?.click()}
+            >
+              {profilePicturePreview || profile?.profilePicture ? (
+                <img
+                  src={profilePicturePreview || profile?.profilePicture || ''}
+                  alt={profile?.fullName}
+                  className="w-24 h-24 rounded-2xl object-cover border-4 border-slate-50 shadow-md mb-4 transition-all group-hover:opacity-75"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-2xl bg-primary/10 text-primary flex items-center justify-center font-extrabold text-3xl border border-primary/5 shadow-inner mb-4 transition-all group-hover:opacity-75">
+                  {profile?.fullName ? profile.fullName.charAt(0).toUpperCase() : (profile?.username?.charAt(0)?.toUpperCase() || 'U')}
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/40 rounded-2xl mb-4 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span className="text-white text-xs font-bold">Change</span>
               </div>
-            )}
+              <input
+                id="profilePictureInput"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleProfilePictureChange}
+              />
+            </div>
             <h2 className="text-base font-bold text-slate-900 truncate max-w-full">
               {profile?.fullName || profile?.username}
             </h2>
@@ -246,25 +279,23 @@ function ProfilePage() {
           <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-50">
             <button
               onClick={() => setActiveTab('info')}
-              className={`w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
-                activeTab === 'info'
-                  ? 'bg-primary text-white shadow-md shadow-primary/15'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
+              className={`w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${activeTab === 'info'
+                ? 'bg-primary text-white shadow-md shadow-primary/15'
+                : 'text-slate-600 hover:bg-slate-50'
+                }`}
             >
               <IconUser className="w-4.5 h-4.5" />
               General Details
             </button>
             <button
               onClick={() => setActiveTab('password')}
-              className={`w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
-                activeTab === 'password'
-                  ? 'bg-primary text-white shadow-md shadow-primary/15'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
+              className={`w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${activeTab === 'password'
+                ? 'bg-primary text-white shadow-md shadow-primary/15'
+                : 'text-slate-600 hover:bg-slate-50'
+                }`}
             >
               <IconLock className="w-4.5 h-4.5" />
-              Security Settings
+              Change Password
             </button>
           </div>
         </div>
@@ -428,7 +459,7 @@ function ProfilePage() {
             <form onSubmit={handleChangePassword} className="space-y-6">
               <div>
                 <h3 className="text-base font-bold text-slate-900 leading-none">
-                  Security Settings
+                  Change  password
                 </h3>
                 <p className="text-xs text-slate-450 font-secondary mt-1">
                   Change your password regularly to protect your personal account info.

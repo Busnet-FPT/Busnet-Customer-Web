@@ -14,9 +14,10 @@ import { getBlogs, type BlogPost } from '../../services/blogService'
 
 const SIDEBAR_CATEGORIES = [
   { label: 'All', value: null },
+  { label: 'General', value: 'General' },
   { label: 'Destinations', value: 'Destinations' },
-  { label: 'Travel Guides', value: 'Guides' },
-  { label: 'Transit News', value: 'News' },
+  { label: 'Travel Guides', value: 'Travel Guides' },
+  { label: 'Transit News', value: 'Transit News' },
 ]
 
 export function BlogPage() {

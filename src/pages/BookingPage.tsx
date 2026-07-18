@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import { createBooking, getBookingStatus } from '../services/bookingService'
-import { getTripDetail, getTripSeats } from '../services/tripService'
-import type { TripItem, TripSeat } from '../types/trip'
-import type { BookingRequest, BookingResponseData } from '../types/booking'
+import { createBooking, getTripDetailForBooking } from '../services/bookingService'
+import type { TripItem, TripSeat, BookingRequest, PointOption } from '../types/booking'
+import { toast } from 'react-hot-toast'
 
-function formatCurrency(value: number) {
+function formatCurrency(value?: number | null) {
+  if (value === undefined || value === null) return '0 đ'
   return value.toLocaleString('vi-VN', {
     style: 'currency',
     currency: 'VND',
@@ -15,9 +14,9 @@ function formatCurrency(value: number) {
 }
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('vi-VN', {
+  return new Date(value).toLocaleDateString('en-US', {
     day: '2-digit',
-    month: '2-digit',
+    month: 'long',
     year: 'numeric',
   })
 }
@@ -36,7 +35,25 @@ function getErrorMessage(error: unknown) {
     return error.message
   }
 
-  return 'Đã xảy ra lỗi, vui lòng thử lại.'
+  return 'An error occurred, please try again.'
+}
+
+// Local mock of useAuth reading from localStorage
+function useAuth() {
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem('user') || localStorage.getItem('account')
+      if (storedUser) {
+        setUser(JSON.parse(storedUser))
+      }
+    } catch (e) {
+      console.error('Error parsing user from localStorage', e)
+    }
+  }, [])
+
+  return { user }
 }
 
 function BookingPage() {
@@ -50,10 +67,14 @@ function BookingPage() {
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [selectedSeatCodes, setSelectedSeatCodes] = useState<string[]>([])
-  const [bookingResult, setBookingResult] = useState<BookingResponseData | null>(null)
-  const [timeLeft, setTimeLeft] = useState(0)
 
+  // Steps state: 1 = Seat Selection, 2 = Passenger & Route Details, 3 = Review & Confirm
+  const [step, setStep] = useState(1)
+
+  // Booking details states
+  const [selectedSeatCodes, setSelectedSeatCodes] = useState<string[]>([])
+  const [pickupPointsOptions, setPickupPointsOptions] = useState<PointOption[]>([])
+  const [dropoffPointsOptions, setDropoffPointsOptions] = useState<PointOption[]>([])
   const [pickupName, setPickupName] = useState('')
   const [pickupAddress, setPickupAddress] = useState('')
   const [pickupTime, setPickupTime] = useState('')
@@ -64,6 +85,16 @@ function BookingPage() {
   const [passengerPhone, setPassengerPhone] = useState(user?.phone || '')
   const [passengerEmail, setPassengerEmail] = useState(user?.email || '')
   const [customerNote, setCustomerNote] = useState('')
+  const [agreeTerms, setAgreeTerms] = useState(false)
+
+  // Load user data when available
+  useEffect(() => {
+    if (user) {
+      setPassengerName(user.fullName || '')
+      setPassengerPhone(user.phone || '')
+      setPassengerEmail(user.email || '')
+    }
+  }, [user])
 
   useEffect(() => {
     if (!tripId) return
@@ -72,14 +103,38 @@ function BookingPage() {
       setLoading(true)
       setError('')
       try {
-        const [tripRes, seatsRes] = await Promise.all([
-          getTripDetail(tripId),
-          getTripSeats(tripId),
-        ])
-        setTrip(tripRes.data)
-        setSeats(seatsRes.data.seats)
+        const tripRes = await getTripDetailForBooking(tripId)
+        setTrip(tripRes.data.trip)
+        setSeats(tripRes.data.trip.seats || [])
+
+        const pickups = tripRes.data.pickupPoints || []
+        const dropoffs = tripRes.data.dropoffPoints || []
+        setPickupPointsOptions(pickups)
+        setDropoffPointsOptions(dropoffs)
+
+        // Set default pickup points
+        if (pickups.length > 0) {
+          setPickupName(pickups[0].name)
+          setPickupAddress(pickups[0].address)
+          setPickupTime(pickups[0].time)
+        } else if (tripRes.data.trip.route) {
+          setPickupName('Departure Bus Station')
+          setPickupAddress(tripRes.data.trip.route.origin_representativeAddress || tripRes.data.trip.route.originProvince)
+          setPickupTime(tripRes.data.trip.departureTime || '')
+        }
+
+        // Set default dropoff points
+        if (dropoffs.length > 0) {
+          setDropoffName(dropoffs[0].name)
+          setDropoffAddress(dropoffs[0].address)
+          setDropoffTime(dropoffs[0].time)
+        } else if (tripRes.data.trip.route) {
+          setDropoffName('Arrival Bus Station')
+          setDropoffAddress(tripRes.data.trip.route.destination_representativeAddress || tripRes.data.trip.route.destinationProvince)
+          setDropoffTime(tripRes.data.trip.arrivalTime || '')
+        }
       } catch (error) {
-        setError(getErrorMessage(error) || 'Không thể tải thông tin chuyến và ghế.')
+        setError(getErrorMessage(error) || 'Failed to load trip and seat details.')
       } finally {
         setLoading(false)
       }
@@ -88,93 +143,14 @@ function BookingPage() {
     fetchData()
   }, [tripId])
 
-  useEffect(() => {
-    if (!bookingResult?.booking?.expiresAt) return
-
-    const updateCountdown = () => {
-      if (!bookingResult.booking.expiresAt) {
-        setTimeLeft(0)
-        return
-      }
-
-      const expiresAt = new Date(bookingResult.booking.expiresAt).getTime()
-      setTimeLeft(Math.max(0, expiresAt - Date.now()))
-    }
-
-    updateCountdown()
-    const countdownTimer = window.setInterval(updateCountdown, 1000)
-
-    return () => window.clearInterval(countdownTimer)
-  }, [bookingResult])
-
-  useEffect(() => {
-    if (!bookingResult?.booking?.bookingCode) return
-
-    const shouldPoll =
-      bookingResult.booking.paymentStatus !== 'PAID' &&
-      bookingResult.booking.paymentStatus !== 'SUCCESS' &&
-      bookingResult.booking.paymentStatus !== 'CONFIRMED' &&
-      bookingResult.booking.paymentStatus !== 'EXPIRED' &&
-      bookingResult.booking.paymentStatus !== 'CANCELLED' &&
-      timeLeft > 0
-
-    if (!shouldPoll) return
-
-    const pollStatus = async () => {
-      try {
-        const response = await getBookingStatus(bookingResult.booking.bookingCode)
-        const latest = response.data
-
-        if (latest.paymentStatus === 'EXPIRED' || latest.paymentStatus === 'CANCELLED') {
-          setError('Mã đặt vé đã hết hạn. Vui lòng tạo lại booking mới.')
-        }
-
-        setBookingResult((prev) => {
-          if (!prev) return prev
-          return {
-            ...prev,
-            booking: {
-              ...prev.booking,
-              status: latest.status ?? prev.booking.status,
-              paymentStatus: latest.paymentStatus ?? prev.booking.paymentStatus,
-              expiresAt: latest.expiresAt ?? prev.booking.expiresAt,
-            },
-          }
-        })
-      } catch {
-        // ignore polling errors
-      }
-    }
-
-    pollStatus()
-    const statusTimer = window.setInterval(pollStatus, 10000)
-
-    return () => window.clearInterval(statusTimer)
-  }, [bookingResult?.booking?.bookingCode, bookingResult?.booking?.paymentStatus, timeLeft])
-
-  const selectedSeats = useMemo(
+  const selectedSeatsObj = useMemo(
     () => seats.filter((seat) => selectedSeatCodes.includes(seat.seatCode)),
     [seats, selectedSeatCodes],
   )
   const totalAmount = useMemo(
-    () => selectedSeats.reduce((sum, seat) => sum + Number(seat.price || 0), 0),
-    [selectedSeats],
+    () => selectedSeatsObj.reduce((sum, seat) => sum + Number(seat.price || 0), 0),
+    [selectedSeatsObj],
   )
-
-  const countdownText = useMemo(() => {
-    const totalSeconds = Math.max(0, Math.floor(timeLeft / 1000))
-    const minutes = Math.floor(totalSeconds / 60)
-    const seconds = totalSeconds % 60
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-  }, [timeLeft])
-
-  const isPaymentExpired = useMemo(() => {
-    if (!bookingResult?.booking?.expiresAt) return false
-    return (
-      timeLeft <= 0 &&
-      !['PAID', 'SUCCESS', 'CONFIRMED'].includes(bookingResult.booking.paymentStatus)
-    )
-  }, [bookingResult, timeLeft])
 
   const toggleSeat = (seatCode: string) => {
     setSelectedSeatCodes((current) =>
@@ -186,32 +162,43 @@ function BookingPage() {
 
   const handleBooking = async () => {
     if (!tripId || selectedSeatCodes.length === 0) {
-      setError('Vui lòng chọn ít nhất một ghế.')
+      toast.error('Please select at least one seat.')
+      return
+    }
+
+    if (!passengerName.trim() || !passengerPhone.trim()) {
+      toast.error('Please enter passenger name and phone number.')
+      return
+    }
+
+    if (!agreeTerms) {
+      toast.error('You must agree to the Terms & Policies.')
       return
     }
 
     const payload: BookingRequest = {
       tripId,
       seatCodes: selectedSeatCodes,
-      pickupPoint_name: pickupName,
-      pickupPoint_address: pickupAddress,
-      pickupPoint_time: pickupTime,
-      dropoffPoint_name: dropoffName,
-      dropoffPoint_address: dropoffAddress,
-      dropoffPoint_time: dropoffTime,
-      passengerName,
-      passengerPhone,
-      passengerEmail,
-      customerNote,
+      pickupPoint_name: pickupName.trim() || 'Default Pickup Point',
+      pickupPoint_address: pickupAddress.trim(),
+      pickupPoint_time: pickupTime.trim(),
+      dropoffPoint_name: dropoffName.trim() || 'Default Dropoff Point',
+      dropoffPoint_address: dropoffAddress.trim(),
+      dropoffPoint_time: dropoffTime.trim(),
+      passengerName: passengerName.trim(),
+      passengerPhone: passengerPhone.trim(),
+      passengerEmail: passengerEmail.trim(),
+      customerNote: customerNote.trim() || undefined,
     }
 
     setSubmitting(true)
-    setError('')
     try {
       const result = await createBooking(payload)
-      setBookingResult(result.data)
+      toast.success('Booking successful!')
+      navigate(`/payment/${result.data.booking.bookingCode}`)
     } catch (error) {
-      setError(getErrorMessage(error) || 'Không thể tạo booking. Vui lòng thử lại.')
+      const errMsg = getErrorMessage(error) || 'Failed to create booking. Please try again.'
+      toast.error(errMsg)
     } finally {
       setSubmitting(false)
     }
@@ -219,16 +206,16 @@ function BookingPage() {
 
   if (!tripId) {
     return (
-      <section className="min-h-screen bg-slate-50 py-12">
-        <div className="mx-auto max-w-3xl rounded-3xl bg-white p-10 text-center shadow-sm">
-          <h1 className="text-2xl font-bold text-slate-900">Chọn chuyến trước</h1>
-          <p className="mt-2 text-slate-600">Vui lòng quay lại trang chuyến xe và chọn một chuyến để đặt vé.</p>
+      <section className="min-h-screen bg-slate-50 py-12 font-secondary">
+        <div className="mx-auto max-w-3xl rounded-3xl bg-white p-10 text-center shadow-sm border border-slate-100">
+          <h1 className="text-2xl font-bold text-slate-900 font-primary">Select a trip first</h1>
+          <p className="mt-2 text-slate-650">Please return to the trips page and select a trip to book.</p>
           <button
             type="button"
             onClick={() => navigate('/trips')}
-            className="mt-6 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white"
+            className="mt-6 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white font-bold px-8 py-3 text-sm transition-all shadow-md active:scale-95"
           >
-            Tìm chuyến xe
+            Find Trips
           </button>
         </div>
       </section>
@@ -236,175 +223,524 @@ function BookingPage() {
   }
 
   return (
-    <section className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#eef7ff_100%)] py-12">
-      <div className="mx-auto w-full max-w-7xl px-4">
+    <section className="min-h-screen bg-slate-50/50 py-10 font-secondary pb-32">
+      <div className="mx-auto w-full max-w-5xl px-4">
         {loading && (
-          <div className="rounded-3xl bg-white p-8 text-center text-slate-600 shadow-sm">Đang tải chuyến...</div>
+          <div className="rounded-3xl bg-white p-16 text-center text-slate-500 shadow-sm border border-slate-100 animate-pulse font-bold">
+            Loading trip details...
+          </div>
         )}
-        {error && !bookingResult && (
-          <div className="rounded-3xl bg-rose-50 p-8 text-center text-rose-700 shadow-sm">{error}</div>
-        )}
-
-        {trip && (
-          <div className="mb-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div className="bg-linear-to-r from-primary/10 to-cyan-500/10 p-6">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-primary">Booking flow</p>
-                  <h1 className="mt-2 text-3xl font-bold text-slate-900">{trip.route?.routeName || 'Chuyến xe'}</h1>
-                  <p className="mt-2 text-sm text-slate-600">
-                    {trip.route?.originProvince} → {trip.route?.destinationProvince} • {formatDate(trip.departureDate)} • {trip.departureTime}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm">
-                  {trip.availableSeats} ghế còn lại
-                </div>
-              </div>
-            </div>
+        {error && (
+          <div className="rounded-3xl bg-rose-50 p-8 text-center text-rose-700 shadow-sm border border-rose-100 font-bold mb-6">
+            {error}
           </div>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between">
+        {trip && !loading && (
+          <>
+            {/* Step Stepper Progress Bar */}
+            <div className="flex items-center justify-between max-w-md mx-auto mb-8 font-primary">
+              <div className="flex items-center gap-2">
+                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${step === 1 ? 'bg-blue-500 text-white shadow-md shadow-blue-500/25' : 'bg-white border border-slate-200 text-slate-500'
+                  }`}>1</span>
+                <span className={`text-xs font-bold transition-all duration-300 ${step === 1 ? 'text-slate-800' : 'text-slate-400'}`}>Select Seat</span>
+              </div>
+              <div className="flex-1 h-0.5 bg-slate-200 mx-3" />
+              <div className="flex items-center gap-2">
+                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${step === 2 ? 'bg-blue-500 text-white shadow-md shadow-blue-500/25' : 'bg-white border border-slate-200 text-slate-500'
+                  }`}>2</span>
+                <span className={`text-xs font-bold transition-all duration-300 ${step === 2 ? 'text-slate-800' : 'text-slate-400'}`}>Passenger Info</span>
+              </div>
+              <div className="flex-1 h-0.5 bg-slate-200 mx-3" />
+              <div className="flex items-center gap-2">
+                <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs transition-all duration-300 ${step === 3 ? 'bg-blue-500 text-white shadow-md shadow-blue-500/25' : 'bg-white border border-slate-200 text-slate-500'
+                  }`}>3</span>
+                <span className={`text-xs font-bold transition-all duration-300 ${step === 3 ? 'text-slate-800' : 'text-slate-400'}`}>Confirm</span>
+              </div>
+            </div>
+
+            {/* Trip Details Card Summary */}
+            <div className="mb-6 overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Step 1</p>
-                <h2 className="mt-1 text-xl font-bold text-slate-900">Chọn ghế</h2>
+                <p className="text-[10px] font-extrabold uppercase tracking-widest text-blue-500 font-primary">Itinerary</p>
+                <h1 className="mt-1.5 text-xl font-bold text-slate-800 font-primary">{trip.route?.routeName || 'Trip'}</h1>
+                <p className="mt-1 text-xs font-semibold text-slate-500">
+                  {trip.route?.originProvince} → {trip.route?.destinationProvince} • {formatDate(trip.departureDate)} • {trip.departureTime}
+                </p>
               </div>
-              <div className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
-                {selectedSeatCodes.length} ghế
-              </div>
-            </div>
-            <div className="mt-5 rounded-2xl bg-slate-50 p-4">
-              <div className="mb-3 flex items-center gap-3 text-sm text-slate-600">
-                <span className="inline-flex h-4 w-4 rounded-full bg-primary" /> Có sẵn
-                <span className="inline-flex h-4 w-4 rounded-full bg-slate-200" /> Đã khóa
-                <span className="inline-flex h-4 w-4 rounded-full bg-primary/80" /> Đang chọn
-              </div>
-              <div className="grid grid-cols-4 gap-3">
-                {seats.map((seat) => {
-                  const isSelected = selectedSeatCodes.includes(seat.seatCode)
-                  const isAvailable = seat.status === 'AVAILABLE'
-                  return (
-                    <button
-                      key={seat.seatCode}
-                      type="button"
-                      disabled={!isAvailable}
-                      onClick={() => toggleSeat(seat.seatCode)}
-                      className={`rounded-2xl px-3 py-3 text-sm font-semibold transition ${
-                        !isAvailable
-                          ? 'cursor-not-allowed bg-slate-200 text-slate-400'
-                          : isSelected
-                            ? 'bg-primary text-white shadow-md'
-                            : 'bg-white text-slate-800 hover:bg-slate-100'
-                      }`}
-                    >
-                      {seat.seatCode}
-                    </button>
-                  )
-                })}
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="text-xs font-extrabold px-3 py-1.5 bg-slate-100 rounded-lg text-slate-600">
+                  {trip.bus?.busName || 'Premium Bus'}
+                </span>
+                <span className="text-xs font-extrabold px-3 py-1.5 bg-blue-50 text-blue-500 rounded-lg">
+                  {trip.availableSeats} seats available
+                </span>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Step 2</p>
-              <h2 className="mt-1 text-xl font-bold text-slate-900">Thông tin hành khách</h2>
-            </div>
-            <div className="mt-4 space-y-3">
-              <input value={passengerName} onChange={(e) => setPassengerName(e.target.value)} placeholder="Tên hành khách" className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
-              <input value={passengerPhone} onChange={(e) => setPassengerPhone(e.target.value)} placeholder="Số điện thoại" className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
-              <input value={passengerEmail} onChange={(e) => setPassengerEmail(e.target.value)} placeholder="Email" className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
-              <textarea value={customerNote} onChange={(e) => setCustomerNote(e.target.value)} placeholder="Ghi chú cho nhà xe" className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" rows={3} />
-            </div>
-          </div>
-        </div>
+            {/* Step Render Area */}
+            <div className="grid gap-6">
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Step 3</p>
-              <h2 className="mt-1 text-xl font-bold text-slate-900">Điểm đón / trả</h2>
-            </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-700">Điểm đón</p>
-                <input value={pickupName} onChange={(e) => setPickupName(e.target.value)} placeholder="Tên điểm đón" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
-                <input value={pickupAddress} onChange={(e) => setPickupAddress(e.target.value)} placeholder="Địa chỉ" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
-                <input value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} placeholder="HH:mm" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
-              </div>
-              <div className="rounded-2xl bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-700">Điểm trả</p>
-                <input value={dropoffName} onChange={(e) => setDropoffName(e.target.value)} placeholder="Tên điểm trả" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
-                <input value={dropoffAddress} onChange={(e) => setDropoffAddress(e.target.value)} placeholder="Địa chỉ" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
-                <input value={dropoffTime} onChange={(e) => setDropoffTime(e.target.value)} placeholder="HH:mm" className="mt-2 w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10" />
-              </div>
-            </div>
-          </div>
+              {/* STEP 1: Seat Selection */}
+              {step === 1 && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Seat Map Panel */}
+                  <div className="lg:col-span-2 rounded-3xl border border-slate-200 bg-white p-6 shadow-xs relative">
+                    <div className="flex justify-between items-center mb-6">
+                      <div>
+                        <h2 className="text-base font-extrabold text-slate-800 font-primary">Seat Map</h2>
+                        <p className="text-xs text-slate-400 mt-0.5">Please select your preferred seats</p>
+                      </div>
+                      <div className="text-xs font-bold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100">
+                        Selected: <span className="text-blue-500 font-extrabold">{selectedSeatCodes.join(', ') || 'None'}</span>
+                      </div>
+                    </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-slate-500">Step 4</p>
-              <h2 className="mt-1 text-xl font-bold text-slate-900">Tóm tắt</h2>
-            </div>
-            <div className="mt-4 space-y-3">
-              <div className="flex items-center justify-between text-sm text-slate-600">
-                <span>Ghế đã chọn</span>
-                <span>{selectedSeatCodes.join(', ') || '—'}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm text-slate-600">
-                <span>Số lượng</span>
-                <span>{selectedSeatCodes.length}</span>
-              </div>
-              <div className="flex items-center justify-between text-base font-semibold text-slate-900">
-                <span>Tổng tiền</span>
-                <span>{formatCurrency(totalAmount)}</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleBooking}
-                disabled={submitting || selectedSeatCodes.length === 0}
-                className="w-full rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:bg-slate-300"
-              >
-                {submitting ? 'Đang tạo booking...' : 'Đặt vé ngay'}
-              </button>
-            </div>
-          </div>
-        </div>
+                    {/* Steer/Driver visual representation */}
+                    {/* <div className="max-w-xs mx-auto mb-6 bg-slate-50/70 border border-slate-100 rounded-2xl py-3 px-4 flex justify-between items-center text-slate-400">
+                      <span className="text-xs font-bold tracking-wider font-primary">Front</span>
+                      <span className="text-xl">☸️ Driver</span>
+                    </div> */}
 
-        {bookingResult && (
-          <div className="mt-6 rounded-3xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
-            <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-emerald-700">Step 5</p>
-              <h2 className="mt-1 text-xl font-bold text-emerald-900">Thanh toán</h2>
-            </div>
-            <div className="mt-4 grid gap-4 md:grid-cols-[1fr_1.1fr]">
-              <div className="space-y-3 rounded-2xl bg-white p-4 text-sm text-emerald-900">
-                <div className={`rounded-2xl p-3 text-center ${isPaymentExpired ? 'bg-rose-50' : 'bg-amber-50'}`}>
-                  <p className="text-xs uppercase tracking-[0.24em] text-slate-500">Thời gian giữ vé</p>
-                  <p className={`mt-1 text-3xl font-bold ${isPaymentExpired ? 'text-rose-600' : 'text-amber-600'}`}>{countdownText}</p>
-                  <p className="mt-1 text-xs text-slate-500">{isPaymentExpired ? 'Mã đã hết hạn, vui lòng tạo lại đặt vé' : 'Mã sẽ tự hủy khi hết thời gian'}</p>
-                </div>
-                <p><span className="font-semibold">Mã đặt vé:</span> {bookingResult.booking.bookingCode}</p>
-                <p><span className="font-semibold">Trạng thái:</span> {bookingResult.booking.status}</p>
-                <p><span className="font-semibold">Thanh toán:</span> {bookingResult.booking.paymentStatus}</p>
-                <p><span className="font-semibold">Hết hạn:</span> {bookingResult.booking.expiresAt ? new Date(bookingResult.booking.expiresAt).toLocaleString('vi-VN') : '—'}</p>
-                <p><span className="font-semibold">Số tiền:</span> {formatCurrency(bookingResult.payment?.amount || 0)}</p>
-                <p><span className="font-semibold">Ngân hàng:</span> {bookingResult.payment?.bankAccountName || ''}</p>
-              </div>
-              <div className="rounded-2xl bg-white p-4 text-center">
-                <p className="text-sm font-semibold text-emerald-900">QR thanh toán</p>
-                {bookingResult.payment?.qrUrl && !isPaymentExpired ? (
-                  <img src={bookingResult.payment.qrUrl} alt="QR payment" className="mx-auto mt-3 max-w-full rounded-2xl border bg-white p-3" />
-                ) : (
-                  <div className="mt-3 rounded-2xl border border-dashed border-rose-200 bg-rose-50 p-6 text-sm text-rose-600">
-                    QR không còn khả dụng vì mã đã hết hạn
+                    {/* Seat Grid Map */}
+                    <div className="max-w-xs mx-auto bg-slate-50/50 border border-slate-200/60 rounded-3xl p-6 shadow-inner">
+                      <div className="grid grid-cols-4 gap-3">
+                        {seats.map((seat) => {
+                          const isSelected = selectedSeatCodes.includes(seat.seatCode)
+                          const isBooked = seat.status === 'BOOKED'
+                          const isHeld = seat.status === 'HELD'
+                          const isAvailable = seat.status === 'AVAILABLE'
+
+                          return (
+                            <button
+                              key={seat.seatCode}
+                              type="button"
+                              disabled={!isAvailable}
+                              onClick={() => toggleSeat(seat.seatCode)}
+                              className={`h-11 rounded-xl text-xs font-bold transition-all cursor-pointer ${isBooked
+                                ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-200'
+                                : isHeld
+                                  ? 'bg-amber-100 text-amber-600 border border-amber-200 cursor-not-allowed'
+                                  : isSelected
+                                    ? 'bg-blue-500 text-white border border-blue-500 shadow-md shadow-blue-500/20 scale-105'
+                                    : 'bg-white text-slate-700 border border-slate-200 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50/10'
+                                }`}
+                              title={seat.seatCode + ` - ${formatCurrency(seat.price)}`}
+                            >
+                              {seat.seatCode}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Color legends */}
+                    <div className="flex justify-center gap-4 flex-wrap mt-8 pt-4 border-t border-slate-100 text-xs font-semibold text-slate-500">
+                      <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded bg-white border border-slate-200 inline-block" /> Available</span>
+                      <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded bg-blue-500 inline-block" /> Selected</span>
+                      <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded bg-slate-200 inline-block" /> Booked</span>
+                      <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded bg-amber-100 border border-amber-200 inline-block" /> Held</span>
+                    </div>
                   </div>
-                )}
-              </div>
+
+                  {/* Summary Sidebar Panel */}
+                  <div className="lg:col-span-1 rounded-3xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-800 font-primary border-b border-slate-100 pb-3">Booking Details</h3>
+                      <div className="mt-4 space-y-3.5 text-xs text-slate-500 font-semibold">
+                        <div className="flex justify-between">
+                          <span>Route:</span>
+                          <span className="text-slate-800 font-bold">{trip.route?.routeName}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Operator:</span>
+                          <span className="text-slate-800 font-bold">{trip.operator?.operatorName}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Selected Seats:</span>
+                          <span className="text-blue-500 font-bold">{selectedSeatCodes.length} seats</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Seat Codes:</span>
+                          <span className="text-slate-800 font-bold">{selectedSeatCodes.join(', ') || 'None'}</span>
+                        </div>
+                        <div className="flex justify-between border-t border-slate-100 pt-3.5 text-sm text-slate-800 font-bold">
+                          <span>Subtotal:</span>
+                          <span className="text-blue-600 text-base font-black">{formatCurrency(totalAmount)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={selectedSeatCodes.length === 0}
+                      onClick={() => setStep(2)}
+                      className="w-full mt-6 rounded-2xl bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3.5 text-xs font-bold tracking-wider disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-95 transition-all"
+                    >
+                      Continue
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 2: Passenger & Pickup/Dropoff Form */}
+              {step === 2 && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Forms input block */}
+                  <div className="lg:col-span-2 space-y-6">
+                    {/* Passenger form card */}
+                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
+                      <h2 className="text-base font-extrabold text-slate-800 font-primary border-b border-slate-100 pb-3.5 mb-4">Passenger Information</h2>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5">Full Name</label>
+                          <input
+                            type="text"
+                            value={passengerName}
+                            onChange={(e) => setPassengerName(e.target.value)}
+                            placeholder="John Doe"
+                            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5">Phone Number</label>
+                            <input
+                              type="tel"
+                              value={passengerPhone}
+                              onChange={(e) => setPassengerPhone(e.target.value)}
+                              placeholder="+84..."
+                              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block mb-1.5">Email (Optional)</label>
+                            <input
+                              type="email"
+                              value={passengerEmail}
+                              onChange={(e) => setPassengerEmail(e.target.value)}
+                              placeholder="email@example.com"
+                              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Route Details (Pickup/Dropoff) form card */}
+                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
+                      <h2 className="text-base font-extrabold text-slate-800 font-primary border-b border-slate-100 pb-3.5 mb-4">Pickup & Dropoff</h2>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        {/* Pickup fields */}
+                        <div className="p-4 bg-slate-50/50 border border-slate-200/50 rounded-2xl space-y-3">
+                          <p className="text-xs font-black text-slate-800 font-primary border-b border-slate-100 pb-2 flex items-center gap-1.5">
+                            Pickup Point
+                          </p>
+                          {pickupPointsOptions.length > 0 ? (
+                            <div>
+                              <label className="text-[9px] font-extrabold uppercase text-slate-400 block mb-1">Select Location</label>
+                              <select
+                                value={`${pickupName}|${pickupTime}`}
+                                onChange={(e) => {
+                                  const [n, t] = e.target.value.split('|')
+                                  const pt = pickupPointsOptions.find(p => p.name === n && p.time === t)
+                                  if (pt) {
+                                    setPickupName(pt.name)
+                                    setPickupAddress(pt.address)
+                                    setPickupTime(pt.time)
+                                  }
+                                }}
+                                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 font-semibold"
+                              >
+                                {pickupPointsOptions.map((pt, idx) => (
+                                  <option key={idx} value={`${pt.name}|${pt.time}`}>
+                                    {pt.time} - {pt.name}
+                                  </option>
+                                ))}
+                              </select>
+                              <div className="mt-2 text-[10px] text-slate-500 font-secondary leading-relaxed">
+                                <span className="font-bold text-slate-700">Address:</span> {pickupAddress}
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div>
+                                <label className="text-[9px] font-extrabold uppercase text-slate-400 block mb-1">Location Name</label>
+                                <input
+                                  type="text"
+                                  value={pickupName}
+                                  onChange={(e) => setPickupName(e.target.value)}
+                                  placeholder="e.g. Mien Dong Station"
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 font-semibold"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-extrabold uppercase text-slate-400 block mb-1">Detailed Address</label>
+                                <input
+                                  type="text"
+                                  value={pickupAddress}
+                                  onChange={(e) => setPickupAddress(e.target.value)}
+                                  placeholder="Specific address"
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 font-semibold"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-extrabold uppercase text-slate-400 block mb-1">Estimated Time</label>
+                                <input
+                                  type="text"
+                                  value={pickupTime}
+                                  onChange={(e) => setPickupTime(e.target.value)}
+                                  placeholder="e.g. 14:00"
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 font-semibold"
+                                />
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Dropoff fields */}
+                        <div className="p-4 bg-slate-50/50 border border-slate-200/50 rounded-2xl space-y-3">
+                          <p className="text-xs font-black text-slate-800 font-primary border-b border-slate-100 pb-2 flex items-center gap-1.5">
+                            Dropoff Point
+                          </p>
+                          {dropoffPointsOptions.length > 0 ? (
+                            <div>
+                              <label className="text-[9px] font-extrabold uppercase text-slate-400 block mb-1">Select Location</label>
+                              <select
+                                value={`${dropoffName}|${dropoffTime}`}
+                                onChange={(e) => {
+                                  const [n, t] = e.target.value.split('|')
+                                  const pt = dropoffPointsOptions.find(p => p.name === n && p.time === t)
+                                  if (pt) {
+                                    setDropoffName(pt.name)
+                                    setDropoffAddress(pt.address)
+                                    setDropoffTime(pt.time)
+                                  }
+                                }}
+                                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 font-semibold"
+                              >
+                                {dropoffPointsOptions.map((pt, idx) => (
+                                  <option key={idx} value={`${pt.name}|${pt.time}`}>
+                                    {pt.time} - {pt.name}
+                                  </option>
+                                ))}
+                              </select>
+                              <div className="mt-2 text-[10px] text-slate-500 font-secondary leading-relaxed">
+                                <span className="font-bold text-slate-700">Address:</span> {dropoffAddress}
+                              </div>
+                            </div>
+                          ) : (
+                            <>
+                              <div>
+                                <label className="text-[9px] font-extrabold uppercase text-slate-400 block mb-1">Location Name</label>
+                                <input
+                                  type="text"
+                                  value={dropoffName}
+                                  onChange={(e) => setDropoffName(e.target.value)}
+                                  placeholder="e.g. Da Lat Station"
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 font-semibold"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-extrabold uppercase text-slate-400 block mb-1">Detailed Address</label>
+                                <input
+                                  type="text"
+                                  value={dropoffAddress}
+                                  onChange={(e) => setDropoffAddress(e.target.value)}
+                                  placeholder="Specific address"
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 font-semibold"
+                                />
+                              </div>
+                              <div>
+                                <label className="text-[9px] font-extrabold uppercase text-slate-400 block mb-1">Estimated Time</label>
+                                <input
+                                  type="text"
+                                  value={dropoffTime}
+                                  onChange={(e) => setDropoffTime(e.target.value)}
+                                  placeholder="e.g. 20:00"
+                                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-800 outline-none focus:border-blue-500 font-semibold"
+                                />
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Notes Card */}
+                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs">
+                      <h2 className="text-base font-extrabold text-slate-800 font-primary border-b border-slate-100 pb-3 mb-4">Trip Notes</h2>
+                      <textarea
+                        value={customerNote}
+                        onChange={(e) => setCustomerNote(e.target.value)}
+                        placeholder="Any special requests for the operator or driver?"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm text-slate-800 outline-none focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold"
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Summary Sidebar Panel */}
+                  <div className="lg:col-span-1 rounded-3xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between h-fit space-y-6">
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-800 font-primary border-b border-slate-100 pb-3">Booking Summary</h3>
+                      <div className="mt-4 space-y-3 text-xs text-slate-500 font-semibold">
+                        <div className="flex justify-between">
+                          <span>Passenger:</span>
+                          <span className="text-slate-800 font-bold truncate max-w-[130px]">{passengerName || 'Not filled'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Phone:</span>
+                          <span className="text-slate-800 font-bold">{passengerPhone || 'Not filled'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Seats count:</span>
+                          <span className="text-slate-800 font-bold">{selectedSeatCodes.length}</span>
+                        </div>
+                        <div className="flex justify-between border-t border-slate-100 pt-3 text-sm text-slate-800 font-bold">
+                          <span>Total:</span>
+                          <span className="text-blue-600 text-base font-black">{formatCurrency(totalAmount)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => setStep(3)}
+                        disabled={!passengerName.trim() || !passengerPhone.trim()}
+                        className="w-full rounded-2xl bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3.5 text-xs font-bold tracking-wider disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-95 transition-all"
+                      >
+                        Checkout
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStep(1)}
+                        className="w-full rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 py-3 text-xs font-bold active:scale-95 transition-all"
+                      >
+                        Back to Seats
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 3: Review & Confirm */}
+              {step === 3 && (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Detailed review panel */}
+                  <div className="lg:col-span-2 space-y-6">
+                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs space-y-6">
+                      <h2 className="text-base font-extrabold text-slate-800 font-primary border-b border-slate-100 pb-3">Review Details</h2>
+
+                      {/* Info Sections */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+                        {/* Journey Summary */}
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Trip Info</p>
+                          <p className="font-bold text-slate-800">{trip.route?.routeName}</p>
+                          <p className="text-xs text-slate-500 font-semibold">{trip.operator?.operatorName} • {trip.bus?.busName}</p>
+                          <p className="text-xs text-slate-500 font-semibold">Departure: {formatDate(trip.departureDate)} at {trip.departureTime}</p>
+                          <p className="text-xs text-slate-500 font-semibold">Seats: <span className="text-blue-500 font-bold">{selectedSeatCodes.join(', ')}</span></p>
+                        </div>
+
+                        {/* Passenger Summary */}
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Passenger Info</p>
+                          <p className="font-bold text-slate-800">{passengerName}</p>
+                          <p className="text-xs text-slate-500 font-semibold">Phone: {passengerPhone}</p>
+                          {passengerEmail && <p className="text-xs text-slate-500 font-semibold">Email: {passengerEmail}</p>}
+                          {customerNote && <p className="text-xs text-slate-500 font-semibold italic">Note: "{customerNote}"</p>}
+                        </div>
+
+                        {/* Pickup Point Summary */}
+                        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">📍 Pickup</p>
+                          <p className="font-bold text-slate-800 text-xs">{pickupName}</p>
+                          <p className="text-[11px] text-slate-500 font-semibold">{pickupAddress}</p>
+                          <p className="text-[11px] text-slate-500 font-bold">Time: {pickupTime}</p>
+                        </div>
+
+                        {/* Dropoff Point Summary */}
+                        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 space-y-1">
+                          <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1">📍 Dropoff</p>
+                          <p className="font-bold text-slate-800 text-xs">{dropoffName}</p>
+                          <p className="text-[11px] text-slate-500 font-semibold">{dropoffAddress}</p>
+                          <p className="text-[11px] text-slate-500 font-bold">Time: {dropoffTime}</p>
+                        </div>
+                      </div>
+
+                      {/* Ticket Rules Warning */}
+                      <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 text-amber-800 text-xs leading-relaxed">
+                        <p className="font-bold mb-1">⚠️ Important Note:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          <li>After confirming the booking, you will have 10 minutes to complete the payment via QR code.</li>
+                          <li>If the time expires, the system will automatically cancel the booking and release the seats.</li>
+                          <li>Please ensure you transfer the exact amount and include the correct transaction content.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary Sidebar Panel */}
+                  <div className="lg:col-span-1 rounded-3xl border border-slate-200 bg-white p-6 shadow-xs flex flex-col justify-between space-y-6">
+                    <div className="space-y-4">
+                      <h3 className="text-base font-extrabold text-slate-800 font-primary border-b border-slate-100 pb-3">Payment</h3>
+                      <div className="space-y-3.5 text-xs text-slate-500 font-semibold">
+                        <div className="flex justify-between">
+                          <span>Seats count:</span>
+                          <span className="text-slate-800 font-bold">{selectedSeatCodes.length}</span>
+                        </div>
+                        <div className="flex justify-between border-t border-slate-100 pt-3.5 text-slate-800 font-bold text-sm">
+                          <span>Total Amount:</span>
+                          <span className="text-blue-600 text-lg font-black">{formatCurrency(totalAmount)}</span>
+                        </div>
+                      </div>
+
+                      {/* Terms Acceptance */}
+                      <div className="pt-2">
+                        <label className="flex items-start gap-2.5 cursor-pointer text-slate-600">
+                          <input
+                            type="checkbox"
+                            checked={agreeTerms}
+                            onChange={(e) => setAgreeTerms(e.target.checked)}
+                            className="mt-0.5 rounded text-blue-500 focus:ring-blue-500/20 border-slate-300 w-4 h-4 cursor-pointer accent-blue-500"
+                          />
+                          <span className="text-[11px] font-semibold leading-relaxed">
+                            I agree to BusNet's{' '}
+                            <a href="/terms" className="text-blue-500 hover:underline font-bold">
+                              Terms of Service
+                            </a>{' '}
+                            and{' '}
+                            <a href="/privacy" className="text-blue-500 hover:underline font-bold">
+                              Privacy Policy
+                            </a>.
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        disabled={submitting || !agreeTerms}
+                        onClick={handleBooking}
+                        className="w-full rounded-2xl bg-linear-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white py-3.5 text-xs font-bold tracking-wider disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg active:scale-95 transition-all"
+                      >
+                        {submitting ? 'Processing...' : 'Checkout'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setStep(2)}
+                        className="w-full rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 py-3 text-xs font-bold active:scale-95 transition-all"
+                      >
+                        Back to Edit
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
             </div>
-          </div>
+          </>
         )}
       </div>
     </section>
