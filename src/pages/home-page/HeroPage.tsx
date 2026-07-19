@@ -69,6 +69,14 @@ function HeroPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
+<<<<<<< HEAD
+
+    const params = new URLSearchParams()
+    if (from.trim()) params.set('originProvince', from.trim())
+    if (to.trim()) params.set('destinationProvince', to.trim())
+    if (date) params.set('departureDate', date)
+
+=======
     if (!date) {
       alert('Please select a Departure Date.')
       return
@@ -81,6 +89,7 @@ function HeroPage() {
     if (from.trim()) params.append('from', from.trim())
     if (to.trim()) params.append('to', to.trim())
     params.append('date', date)
+>>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
     navigate(`/trips?${params.toString()}`)
   }
 
@@ -297,6 +306,7 @@ function HeroPage() {
                 required
               />
             </div>
+
 
             {/* Search Button */}
             <button

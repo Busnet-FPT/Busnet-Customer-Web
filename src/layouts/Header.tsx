@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+<<<<<<< HEAD
+import { useAuth } from '../contexts/AuthContext'
+=======
 import type { UserProfile } from '../services/profileService'
+>>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
 
 function Header() {
     const location = useLocation()
@@ -8,7 +12,11 @@ function Header() {
     const [lang, setLang] = useState('EN')
     const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false)
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
+<<<<<<< HEAD
+    const { user, logout } = useAuth()
+=======
     const [user, setUser] = useState<UserProfile | null>(null)
+>>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -41,6 +49,8 @@ function Header() {
     const isTransparent = location.pathname === '/' && !isScrolled
     const effectiveTransparent = isTransparent && !isMobileMenuOpen
 
+<<<<<<< HEAD
+=======
     // Load user profile and monitor pathname changes
     useEffect(() => {
         const storedUser = localStorage.getItem('user')
@@ -62,6 +72,7 @@ function Header() {
         setIsMobileMenuOpen(false)
     }, [location.pathname])
 
+>>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
     // Close dropdowns on click outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -79,9 +90,7 @@ function Header() {
     }, [])
 
     const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        setUser(null)
+        logout()
         setIsUserDropdownOpen(false)
         navigate('/login')
     }

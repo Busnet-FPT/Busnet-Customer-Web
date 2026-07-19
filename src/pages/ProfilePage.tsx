@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import { getProfile, updateProfile, changePassword, type UserProfile } from '../services/profileService'
 import {
   IconUser,
@@ -19,14 +20,13 @@ import axios from 'axios'
 
 function ProfilePage() {
   const navigate = useNavigate()
+  const { user, setUser } = useAuth()
 
-  // Guard: Check token
-  const token = localStorage.getItem('token')
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       navigate('/login')
     }
-  }, [token, navigate])
+  }, [user, navigate])
 
   // Profile data state
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -90,10 +90,10 @@ function ProfilePage() {
   }
 
   useEffect(() => {
-    if (token) {
+    if (user) {
       fetchProfileData()
     }
-  }, [token])
+  }, [user])
 
   // Handle profile update submit
   const handleUpdateProfile = async (e: React.FormEvent) => {
@@ -280,8 +280,8 @@ function ProfilePage() {
             <button
               onClick={() => setActiveTab('info')}
               className={`w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${activeTab === 'info'
-                  ? 'bg-primary text-white shadow-md shadow-primary/15'
-                  : 'text-slate-600 hover:bg-slate-50'
+                ? 'bg-primary text-white shadow-md shadow-primary/15'
+                : 'text-slate-600 hover:bg-slate-50'
                 }`}
             >
               <IconUser className="w-4.5 h-4.5" />
@@ -290,8 +290,8 @@ function ProfilePage() {
             <button
               onClick={() => setActiveTab('password')}
               className={`w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${activeTab === 'password'
-                  ? 'bg-primary text-white shadow-md shadow-primary/15'
-                  : 'text-slate-600 hover:bg-slate-50'
+                ? 'bg-primary text-white shadow-md shadow-primary/15'
+                : 'text-slate-600 hover:bg-slate-50'
                 }`}
             >
               <IconLock className="w-4.5 h-4.5" />

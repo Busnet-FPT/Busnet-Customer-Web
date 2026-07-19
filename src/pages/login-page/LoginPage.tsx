@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { loginWithGoogle, loginCustomer } from '../../services/authService'
+import { useAuth } from '../../contexts/AuthContext'
 import axios from 'axios'
 import { toast } from 'react-hot-toast'
 
@@ -13,6 +14,7 @@ declare global {
 
 function LoginPage() {
   const navigate = useNavigate()
+  const { login } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
@@ -30,9 +32,13 @@ function LoginPage() {
 
     try {
       const result = await loginWithGoogle(idToken)
+<<<<<<< HEAD
+      login(result.data.account, result.data.token)
+=======
       localStorage.setItem('token', result.data.token)
       localStorage.setItem('user', JSON.stringify(result.data.account))
       toast.success('Signed in successfully!')
+>>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
       navigate('/')
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -101,9 +107,13 @@ function LoginPage() {
           identifier: email.trim(),
           password: password
         })
+<<<<<<< HEAD
+        login(result.data.account, result.data.token)
+=======
         localStorage.setItem('token', result.data.token)
         localStorage.setItem('user', JSON.stringify(result.data.account))
         toast.success('Login successful!')
+>>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
         navigate('/')
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.data) {
