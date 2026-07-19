@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { createBooking, getTripDetailForBooking } from '../services/bookingService'
+import { useAuth } from '../contexts/AuthContext'
 import type { TripItem, TripSeat, BookingRequest, PointOption } from '../types/booking'
 import { toast } from 'react-hot-toast'
 
@@ -13,12 +14,26 @@ function formatCurrency(value?: number | null) {
   })
 }
 
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('en-US', {
+function formatDate(value?: string | null) {
+  if (!value) return ''
+  return new Date(value).toLocaleDateString('en-GB', {
+    timeZone: 'UTC',
     day: '2-digit',
-    month: 'long',
+    month: '2-digit',
     year: 'numeric',
   })
+}
+
+function getDepartureTime(trip?: any) {
+  if (!trip) return ''
+  if (trip.schedule?.departureTime) return trip.schedule.departureTime
+  if (trip.departureTime) return trip.departureTime
+  if (trip.actualDepartureTime !== undefined && trip.actualDepartureTime !== null) {
+    const hrs = Math.floor(Number(trip.actualDepartureTime) / 60)
+    const mins = Number(trip.actualDepartureTime) % 60
+    return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}`
+  }
+  return ''
 }
 
 function getErrorMessage(error: unknown) {
@@ -36,24 +51,6 @@ function getErrorMessage(error: unknown) {
   }
 
   return 'An error occurred, please try again.'
-}
-
-// Local mock of useAuth reading from localStorage
-function useAuth() {
-  const [user, setUser] = useState<any>(null)
-
-  useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('user') || localStorage.getItem('account')
-      if (storedUser) {
-        setUser(JSON.parse(storedUser))
-      }
-    } catch (e) {
-      console.error('Error parsing user from localStorage', e)
-    }
-  }, [])
-
-  return { user }
 }
 
 function BookingPage() {
@@ -112,26 +109,30 @@ function BookingPage() {
         setPickupPointsOptions(pickups)
         setDropoffPointsOptions(dropoffs)
 
+        const t = tripRes.data.trip as any
+        const route = t?.route || {}
+        const schedule = t?.schedule || {}
+
         // Set default pickup points
         if (pickups.length > 0) {
-          setPickupName(pickups[0].name)
-          setPickupAddress(pickups[0].address)
-          setPickupTime(pickups[0].time)
-        } else if (tripRes.data.trip.route) {
-          setPickupName('Departure Bus Station')
-          setPickupAddress(tripRes.data.trip.route.origin_representativeAddress || tripRes.data.trip.route.originProvince)
-          setPickupTime(tripRes.data.trip.departureTime || '')
+          setPickupName(pickups[0].name || 'Departure Station')
+          setPickupAddress(pickups[0].address || route.origin_representativeAddress || route.origin_provinceName || route.originProvince || 'Departure Bus Station')
+          setPickupTime(pickups[0].time || schedule.departureTime || getDepartureTime(t) || '07:00')
+        } else {
+          setPickupName('Departure Station')
+          setPickupAddress(route.origin_representativeAddress || route.origin_provinceName || route.originProvince || 'Departure Bus Station')
+          setPickupTime(schedule.departureTime || getDepartureTime(t) || '07:00')
         }
 
         // Set default dropoff points
         if (dropoffs.length > 0) {
-          setDropoffName(dropoffs[0].name)
-          setDropoffAddress(dropoffs[0].address)
-          setDropoffTime(dropoffs[0].time)
-        } else if (tripRes.data.trip.route) {
-          setDropoffName('Arrival Bus Station')
-          setDropoffAddress(tripRes.data.trip.route.destination_representativeAddress || tripRes.data.trip.route.destinationProvince)
-          setDropoffTime(tripRes.data.trip.arrivalTime || '')
+          setDropoffName(dropoffs[0].name || 'Arrival Station')
+          setDropoffAddress(dropoffs[0].address || route.destination_representativeAddress || route.destination_provinceName || route.destinationProvince || 'Arrival Bus Station')
+          setDropoffTime(dropoffs[0].time || schedule.arrivalTime || '09:30')
+        } else {
+          setDropoffName('Arrival Station')
+          setDropoffAddress(route.destination_representativeAddress || route.destination_provinceName || route.destinationProvince || 'Arrival Bus Station')
+          setDropoffTime(schedule.arrivalTime || '09:30')
         }
       } catch (error) {
         setError(getErrorMessage(error) || 'Failed to load trip and seat details.')
@@ -176,15 +177,18 @@ function BookingPage() {
       return
     }
 
+    const route = (trip?.route || {}) as any
+    const schedule = (trip?.schedule || {}) as any
+
     const payload: BookingRequest = {
       tripId,
       seatCodes: selectedSeatCodes,
-      pickupPoint_name: pickupName.trim() || 'Default Pickup Point',
-      pickupPoint_address: pickupAddress.trim(),
-      pickupPoint_time: pickupTime.trim(),
-      dropoffPoint_name: dropoffName.trim() || 'Default Dropoff Point',
-      dropoffPoint_address: dropoffAddress.trim(),
-      dropoffPoint_time: dropoffTime.trim(),
+      pickupPoint_name: pickupName.trim() || 'Departure Station',
+      pickupPoint_address: pickupAddress.trim() || route.origin_representativeAddress || route.origin_provinceName || route.originProvince || 'Departure Bus Station',
+      pickupPoint_time: pickupTime.trim() || schedule.departureTime || getDepartureTime(trip) || '07:00',
+      dropoffPoint_name: dropoffName.trim() || 'Arrival Station',
+      dropoffPoint_address: dropoffAddress.trim() || route.destination_representativeAddress || route.destination_provinceName || route.destinationProvince || 'Arrival Bus Station',
+      dropoffPoint_time: dropoffTime.trim() || schedule.arrivalTime || '09:30',
       passengerName: passengerName.trim(),
       passengerPhone: passengerPhone.trim(),
       passengerEmail: passengerEmail.trim(),
@@ -265,7 +269,7 @@ function BookingPage() {
                 <p className="text-[10px] font-extrabold uppercase tracking-widest text-blue-500 font-primary">Itinerary</p>
                 <h1 className="mt-1.5 text-xl font-bold text-slate-800 font-primary">{trip.route?.routeName || 'Trip'}</h1>
                 <p className="mt-1 text-xs font-semibold text-slate-500">
-                  {trip.route?.originProvince} → {trip.route?.destinationProvince} • {formatDate(trip.departureDate)} • {trip.departureTime}
+                  {trip.route?.originProvince} → {trip.route?.destinationProvince} • {formatDate(trip.departureDate)} • {getDepartureTime(trip)}
                 </p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
@@ -354,7 +358,7 @@ function BookingPage() {
                         </div>
                         <div className="flex justify-between">
                           <span>Operator:</span>
-                          <span className="text-slate-800 font-bold">{trip.operator?.operatorName}</span>
+                          <span className="text-slate-800 font-bold">{trip.partner?.operatorName || trip.operator?.operatorName || trip.operatorName || 'BusNet Operator'}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>Selected Seats:</span>
@@ -637,8 +641,8 @@ function BookingPage() {
                         <div className="space-y-2">
                           <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Trip Info</p>
                           <p className="font-bold text-slate-800">{trip.route?.routeName}</p>
-                          <p className="text-xs text-slate-500 font-semibold">{trip.operator?.operatorName} • {trip.bus?.busName}</p>
-                          <p className="text-xs text-slate-500 font-semibold">Departure: {formatDate(trip.departureDate)} at {trip.departureTime}</p>
+                          <p className="text-xs text-slate-500 font-semibold">{trip.partner?.operatorName || trip.operator?.operatorName || trip.operatorName || 'BusNet Operator'} • {trip.bus?.busName}</p>
+                          <p className="text-xs text-slate-500 font-semibold">Departure: {formatDate(trip.departureDate)} at {getDepartureTime(trip)}</p>
                           <p className="text-xs text-slate-500 font-semibold">Seats: <span className="text-blue-500 font-bold">{selectedSeatCodes.join(', ')}</span></p>
                         </div>
 

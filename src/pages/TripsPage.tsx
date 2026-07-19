@@ -145,7 +145,7 @@ function TripsPage() {
           operators: selectedOperators.length > 0 ? selectedOperators : undefined,
           busTypes: selectedBusTypes.length > 0 ? selectedBusTypes : undefined,
           maxPrice: maxPrice < 1000000 ? maxPrice : undefined,
-          minPrice: 50000,
+          minPrice: 0,
           sortBy,
           page,
           limit: 6
@@ -513,15 +513,15 @@ function TripsPage() {
                 </div>
                 <input
                   type="range"
-                  min="100000"
+                  min="0"
                   max="1000000"
-                  step="50000"
+                  step="10000"
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(Number(e.target.value))}
                   className="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-blue-500 focus:outline-none"
                 />
                 <div className="flex justify-between text-[9px] text-slate-400 font-extrabold tracking-wider">
-                  <span>100K VNĐ</span>
+                  <span>0 VNĐ</span>
                   <span>1,000K VNĐ</span>
                 </div>
               </div>

@@ -62,6 +62,8 @@ export interface TripItem {
   schedule: ScheduleInfo | null
   bus: BusInfo | null
   partner: PartnerInfo | null
+  operator?: PartnerInfo | null
+  operatorName?: string
   departureDate: string
   departureTime: string
   arrivalTime: string
