@@ -2,6 +2,37 @@ import type { TripItem, TripSeat } from './trip'
 
 export type { TripItem, TripSeat }
 
+export interface RouteInfo {
+  routeName: string
+  originProvince: string
+  originDistrict: string | null
+  destinationProvince: string
+  destinationDistrict: string | null
+  distanceKm: number
+  estimatedDuration: string
+  origin_representativeAddress?: string
+  destination_representativeAddress?: string
+  origin_provinceName?: string
+  destination_provinceName?: string
+}
+
+export interface ScheduleInfo {
+  scheduleId: string
+  scheduleCode: string
+  departureTime: string
+  arrivalTime: string
+  recurrenceType: string
+}
+
+export interface BusInfo {
+  busId: string
+  busName: string
+  busType: string
+  totalSeats: number
+  licensePlate: string
+  images: string[]
+}
+
 export interface PointOption {
   name: string
   address: string
@@ -19,7 +50,7 @@ export interface BookingRequest {
   dropoffPoint_time: string
   passengerName: string
   passengerPhone: string
-  passengerEmail: string
+  passengerEmail?: string
   customerNote?: string
 }
 

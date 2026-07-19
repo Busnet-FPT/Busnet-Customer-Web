@@ -4,7 +4,7 @@ const BANKS = [
   { code: 'MB', name: 'MBBank' },
   { code: 'VCB', name: 'Vietcombank' },
   { code: 'CTG', name: 'VietinBank' },
-  { code: 'BID', name: 'BIDV' },
+  { code: 'BIDV', name: 'BIDV' },
   { code: 'TCB', name: 'Techcombank' },
   { code: 'ACB', name: 'ACB' },
   { code: 'TPB', name: 'TPBank' },

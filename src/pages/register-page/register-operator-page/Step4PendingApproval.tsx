@@ -12,7 +12,7 @@ const Step4PendingApproval: React.FC<Step4PendingApprovalProps> = ({ email, oper
       {/* Animated Clock Icon */}
       <div className="relative">
         <div className="absolute inset-0 rounded-full bg-amber-100/60 animate-ping opacity-75"></div>
-        <div className="relative w-24 h-24 rounded-full bg-gradient-to-tr from-amber-500 to-orange-400 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 border-4 border-white">
+        <div className="relative w-24 h-24 rounded-full bg-linear-to-tr from-amber-500 to-orange-400 text-white flex items-center justify-center shadow-lg shadow-amber-500/20 border-4 border-white">
           <svg className="w-12 h-12 stroke-white stroke-2 fill-none" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -32,7 +32,7 @@ const Step4PendingApproval: React.FC<Step4PendingApprovalProps> = ({ email, oper
       </div>
 
       {/* Status Card */}
-      <div className="w-full bg-gradient-to-b from-white to-slate-50/50 rounded-2xl border border-slate-200/60 shadow-xl shadow-slate-100/50 p-6 md:p-8 text-left space-y-6">
+      <div className="w-full bg-linear-to-b from-white to-slate-50/50 rounded-2xl border border-slate-200/60 shadow-xl shadow-slate-100/50 p-6 md:p-8 text-left space-y-6">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <span className="font-extrabold uppercase tracking-wider text-[11px] text-slate-400 font-primary">
             Review Status
