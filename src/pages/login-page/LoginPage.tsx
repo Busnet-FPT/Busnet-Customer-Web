@@ -32,13 +32,8 @@ function LoginPage() {
 
     try {
       const result = await loginWithGoogle(idToken)
-<<<<<<< HEAD
       login(result.data.account, result.data.token)
-=======
-      localStorage.setItem('token', result.data.token)
-      localStorage.setItem('user', JSON.stringify(result.data.account))
       toast.success('Signed in successfully!')
->>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
       navigate('/')
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {
@@ -107,13 +102,8 @@ function LoginPage() {
           identifier: email.trim(),
           password: password
         })
-<<<<<<< HEAD
         login(result.data.account, result.data.token)
-=======
-        localStorage.setItem('token', result.data.token)
-        localStorage.setItem('user', JSON.stringify(result.data.account))
         toast.success('Login successful!')
->>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
         navigate('/')
       } catch (error) {
         if (axios.isAxiosError(error) && error.response?.data) {
@@ -202,9 +192,9 @@ function LoginPage() {
                   <label htmlFor="password" className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">
                     Password
                   </label>
-                  <a href="/forgot-password" className="text-[11px] font-extrabold text-slate-500 hover:text-primary hover:underline font-primary uppercase tracking-wider">
+                  <Link to="/forgot-password" className="text-[11px] font-extrabold text-slate-500 hover:text-primary hover:underline font-primary uppercase tracking-wider">
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">

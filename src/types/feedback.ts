@@ -1,14 +1,39 @@
 export interface FeedbackItem {
-  feedbackId: string
-  bookingCode: string
+  _id: string
+  bookingId?: {
+    _id: string
+    bookingCode: string
+    status: string
+    total: number
+    passengerName: string
+    passengerPhone: string
+    createdAt: string
+  }
+  partnerId: {
+    _id: string
+    fullName: string
+    email: string
+    phone: string
+    role: string
+    status: string
+  }
   rating: number
-  comment: string
-  operatorResponse?: string
+  review: string
+  reviewImages?: string[]
+  type: 'TRIP' | 'OPERATOR'
   createdAt: string
 }
 
 export interface CreateFeedbackRequest {
-  bookingCode: string
+  bookingId: string
   rating: number
-  comment: string
+  review: string
+  reviewImages?: string[]
+  type?: 'TRIP'
+}
+
+export interface CreateOperatorFeedbackRequest {
+  rating: number
+  review: string
+  reviewImages?: string[]
 }

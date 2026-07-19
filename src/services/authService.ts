@@ -95,6 +95,30 @@ export interface ResendOtpResponse {
   }
 }
 
+export interface ForgotPasswordResponse {
+  success: boolean
+  message: string
+  data: {
+    message: string
+  }
+}
+
+export interface VerifyResetCodeResponse {
+  success: boolean
+  message: string
+  data: {
+    valid: boolean
+  }
+}
+
+export interface ResetPasswordResponse {
+  success: boolean
+  message: string
+  data: {
+    message: string
+  }
+}
+
 /**
  * Verify customer email address with OTP
  * POST /api/customer/auth/verify-email
@@ -105,11 +129,43 @@ export const verifyEmail = async (email: string, code: string): Promise<VerifyEm
 }
 
 /**
- * Resend verification OTP code
+ * Resend verification OTP code for unverified customer email.
+ * Backend uses the forgot-password endpoint to resend REGISTER code when account is unverified.
  * POST /api/customer/auth/forgot-password
  */
 export const resendVerificationOtp = async (email: string): Promise<ResendOtpResponse> => {
   const response = await api.post<ResendOtpResponse>('/customer/auth/forgot-password', { email })
+  return response.data
+}
+
+/**
+ * Send customer password reset OTP
+ * POST /api/customer/auth/forgot-password
+ */
+export const forgotPasswordCustomer = async (email: string): Promise<ForgotPasswordResponse> => {
+  const response = await api.post<ForgotPasswordResponse>('/customer/auth/forgot-password', { email })
+  return response.data
+}
+
+/**
+ * Verify customer password reset OTP
+ * POST /api/customer/auth/verify-reset-code
+ */
+export const verifyResetCodeCustomer = async (email: string, code: string): Promise<VerifyResetCodeResponse> => {
+  const response = await api.post<VerifyResetCodeResponse>('/customer/auth/verify-reset-code', { email, code })
+  return response.data
+}
+
+/**
+ * Reset customer password with verified OTP
+ * POST /api/customer/auth/reset-password
+ */
+export const resetPasswordCustomer = async (
+  email: string,
+  code: string,
+  newPassword: string
+): Promise<ResetPasswordResponse> => {
+  const response = await api.post<ResetPasswordResponse>('/customer/auth/reset-password', { email, code, newPassword })
   return response.data
 }
 
