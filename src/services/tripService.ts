@@ -113,3 +113,23 @@ export const getSearchLocations = async (): Promise<LocationsResponse> => {
   }>('/customer/trips/locations')
   return response.data.data
 }
+
+export interface PopularRouteInfo {
+  _id: string
+  routeName: string
+  origin_provinceName: string
+  destination_provinceName: string
+  distanceKm: number
+  estimatedDuration: number
+  minPrice: number
+  operatorName: string
+}
+
+export const getPopularRoutes = async (): Promise<PopularRouteInfo[]> => {
+  const response = await api.get<{
+    success: boolean
+    message: string
+    data: PopularRouteInfo[]
+  }>('/customer/trips/popular-routes')
+  return response.data.data
+}

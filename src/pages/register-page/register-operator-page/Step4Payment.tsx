@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 interface Step4PaymentProps {
   transaction: {
@@ -12,28 +12,9 @@ interface Step4PaymentProps {
   }
   timeLeft: number
   formatTime: (seconds: number) => string
-  onCheckStatus: () => Promise<void>
 }
 
-const Step4Payment: React.FC<Step4PaymentProps> = ({ transaction, timeLeft, formatTime, onCheckStatus }) => {
-  const [isChecking, setIsChecking] = useState(false)
-  const [statusMessage, setStatusMessage] = useState('')
-
-  const handleManualCheck = async () => {
-    setIsChecking(true)
-    setStatusMessage('')
-    try {
-      await onCheckStatus()
-      // If it doesn't transition (meaning still pending)
-      setStatusMessage('We have not received your payment yet. If you just transferred, please wait 1-2 minutes for the system to process.')
-      // Auto clear message after 6 seconds
-      setTimeout(() => setStatusMessage(''), 6000)
-    } catch (err) {
-      setStatusMessage('Failed to check status. Please check your network connection.')
-    } finally {
-      setIsChecking(false)
-    }
-  }
+const Step4Payment: React.FC<Step4PaymentProps> = ({ transaction, timeLeft, formatTime }) => {
   return (
     <div className="w-full max-w-full mx-auto my-auto space-y-6">
       <div className="text-center space-y-1">
@@ -97,26 +78,8 @@ const Step4Payment: React.FC<Step4PaymentProps> = ({ transaction, timeLeft, form
             {formatTime(timeLeft)}
           </span>
         </div>
-
-        <div className="pt-2 w-full max-w-xs flex flex-col items-center">
-          <button
-            type="button"
-            disabled={isChecking}
-            onClick={handleManualCheck}
-            className="w-full py-2 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-[13px] tracking-wide active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer shadow-sm"
-          >
-            {isChecking ? 'CHECKING STATUS...' : 'I HAVE TRANSFERRED - CHECK STATUS'}
-          </button>
-          
-          {statusMessage && (
-            <p className="mt-2.5 text-[12px] text-amber-600 font-medium text-center leading-relaxed animate-fade-in">
-              ⚠️ {statusMessage}
-            </p>
-          )}
-        </div>
       </div>
     </div>
   )
 }
-
 export default Step4Payment

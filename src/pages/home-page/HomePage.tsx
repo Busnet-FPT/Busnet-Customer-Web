@@ -1,6 +1,7 @@
 import HeroPage from './HeroPage'
 import OperatorSection from './OperatorSection'
 import BlogSection from './BlogSection'
+import PopularRoutesSection from './PopularRoutesSection'
 import ContactSection from './ContactSection'
 
 function HomePage() {
@@ -9,6 +10,7 @@ function HomePage() {
       <HeroPage />
       <OperatorSection />
       <BlogSection />
+      <PopularRoutesSection />
       <ContactSection />
     </div>
   )

@@ -8,12 +8,14 @@ function Header() {
     const [lang, setLang] = useState('EN')
     const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false)
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
+    const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
     const [user, setUser] = useState<UserProfile | null>(null)
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     const langDropdownRef = useRef<HTMLDivElement>(null)
     const userDropdownRef = useRef<HTMLDivElement>(null)
+    const moreDropdownRef = useRef<HTMLDivElement>(null)
 
     const navLinks = [
         { name: 'Home', path: '/' },
@@ -21,8 +23,12 @@ function Header() {
         { name: 'Operators', path: '/operators' },
         { name: 'Booking', path: '/booking' },
         { name: 'Subscription', path: '/subscription' },
-        { name: 'Blog', path: '/blog' }
+        { name: 'Blog', path: '/blog' },
+        { name: 'Lookup', path: '/lookup' }
     ]
+
+    const desktopMainLinks = navLinks.slice(0, 4) // Home, Trips, Operators, Booking
+    const desktopDropdownLinks = navLinks.slice(4) // Subscription, Blog, Lookup
 
     // Monitor scroll position for transparent header
     useEffect(() => {
@@ -71,6 +77,9 @@ function Header() {
             if (userDropdownRef.current && !userDropdownRef.current.contains(event.target as Node)) {
                 setIsUserDropdownOpen(false)
             }
+            if (moreDropdownRef.current && !moreDropdownRef.current.contains(event.target as Node)) {
+                setIsMoreDropdownOpen(false)
+            }
         }
         document.addEventListener('mousedown', handleClickOutside)
         return () => {
@@ -108,7 +117,7 @@ function Header() {
 
                 {/* Navigation Links (Desktop) */}
                 <nav className="hidden md:flex items-center gap-8 nav-link font-medium">
-                    {navLinks.map((link) => {
+                    {desktopMainLinks.map((link) => {
                         const isActive = location.pathname === link.path
                         return (
                             <Link
@@ -125,6 +134,49 @@ function Header() {
                             </Link>
                         )
                     })}
+
+                    {/* 'More' Dropdown (Desktop) */}
+                    <div className="relative" ref={moreDropdownRef}>
+                        <button
+                            onClick={() => setIsMoreDropdownOpen(!isMoreDropdownOpen)}
+                            className={`flex items-center gap-1 py-1 transition-colors duration-300 cursor-pointer ${
+                                desktopDropdownLinks.some(link => location.pathname === link.path)
+                                    ? (effectiveTransparent ? 'text-white font-bold' : 'text-primary')
+                                    : (effectiveTransparent ? 'text-white/75 hover:text-white' : 'text-slate-600 hover:text-primary')
+                            }`}
+                        >
+                            <span>More</span>
+                            <svg
+                                className={`w-3.5 h-3.5 transition-transform duration-200 ${isMoreDropdownOpen ? 'rotate-180' : ''}`}
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        {isMoreDropdownOpen && (
+                            <div className="absolute left-0 mt-2 w-44 rounded-xl bg-white border border-slate-100 shadow-lg py-1.5 z-50 animate-fade-in text-xs font-semibold">
+                                {desktopDropdownLinks.map((link) => {
+                                    const isActive = location.pathname === link.path
+                                    return (
+                                        <Link
+                                            key={link.path}
+                                            to={link.path}
+                                            onClick={() => setIsMoreDropdownOpen(false)}
+                                            className={`flex items-center px-4 py-2 hover:bg-slate-50 transition-colors ${
+                                                isActive ? 'text-primary font-bold bg-slate-50/50' : 'text-slate-600'
+                                            }`}
+                                        >
+                                            {link.name}
+                                        </Link>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </nav>
 
                 {/* Right Section: Language Dropdown & Auth CTA & Hamburger Menu */}

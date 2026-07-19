@@ -145,7 +145,7 @@ function TripsPage() {
           operators: selectedOperators.length > 0 ? selectedOperators : undefined,
           busTypes: selectedBusTypes.length > 0 ? selectedBusTypes : undefined,
           maxPrice: maxPrice < 1000000 ? maxPrice : undefined,
-          minPrice: 50000,
+          minPrice: undefined,
           sortBy,
           page,
           limit: 6

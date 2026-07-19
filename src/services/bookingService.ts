@@ -98,3 +98,14 @@ export const downloadTicketPdf = async (bookingCode: string): Promise<Blob> => {
   })
   return response.data
 }
+
+export const retrieveBookingPublic = async (
+  email: string,
+  bookingCode: string
+): Promise<BookingDetailResponse> => {
+  const response = await api.post<BookingDetailResponse>('/customer/bookings/retrieve', {
+    email,
+    bookingCode
+  })
+  return response.data
+}
