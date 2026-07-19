@@ -272,7 +272,7 @@ function PaymentPage() {
           latestBookingStatus,
         })
 
-        setBooking((prev) =>
+        setBooking((prev: BookingInfoWithSnakeCase | null) =>
           prev
             ? {
                 ...prev,

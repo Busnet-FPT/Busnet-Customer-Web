@@ -5,11 +5,14 @@ import { Toaster } from 'react-hot-toast'
 import './index.css'
 import { router } from './routes/AppRoutes'
 import Preloader from './components/Preloader'
+import { AuthProvider } from './contexts/AuthContext'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Preloader />
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
     <Toaster position="bottom-right" reverseOrder={false} />
   </StrictMode>,
 )

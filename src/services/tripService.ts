@@ -1,4 +1,5 @@
 import api from './api'
+import type { TripDetailResponse, TripSeatsResponse } from '../types/trip'
 
 export interface SearchTripsParams {
   from?: string
@@ -98,6 +99,24 @@ export const searchTrips = async (params: SearchTripsParams): Promise<SearchTrip
     data: SearchTripsResponse
   }>('/customer/trips', { params: formattedParams })
   return response.data.data
+}
+
+/**
+ * Get trip detail by id
+ * GET /api/customer/trips/:id
+ */
+export const getTripDetail = async (tripId: string): Promise<TripDetailResponse> => {
+  const response = await api.get<TripDetailResponse>(`/customer/trips/${tripId}`)
+  return response.data
+}
+
+/**
+ * Get seat layout for a trip
+ * GET /api/customer/trips/:id/seats
+ */
+export const getTripSeats = async (tripId: string): Promise<TripSeatsResponse> => {
+  const response = await api.get<TripSeatsResponse>(`/customer/trips/${tripId}/seats`)
+  return response.data
 }
 
 export interface LocationsResponse {

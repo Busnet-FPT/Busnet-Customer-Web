@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import type { UserProfile } from '../services/profileService'
+import { useAuth } from '../contexts/AuthContext'
 
 function Header() {
     const location = useLocation()
@@ -9,7 +9,7 @@ function Header() {
     const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false)
     const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
     const [isMoreDropdownOpen, setIsMoreDropdownOpen] = useState(false)
-    const [user, setUser] = useState<UserProfile | null>(null)
+    const { user, logout } = useAuth()
     const [isScrolled, setIsScrolled] = useState(false)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -47,27 +47,10 @@ function Header() {
     const isTransparent = location.pathname === '/' && !isScrolled
     const effectiveTransparent = isTransparent && !isMobileMenuOpen
 
-    // Load user profile and monitor pathname changes
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user')
-        if (storedUser) {
-            try {
-                // eslint-disable-next-line react-hooks/set-state-in-effect
-                setUser(JSON.parse(storedUser))
-            } catch (e) {
-                console.error(e)
-            }
-        } else {
-            setUser(null)
-        }
-    }, [location.pathname])
-
     // Close mobile menu on pathname change
     useEffect(() => {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsMobileMenuOpen(false)
     }, [location.pathname])
-
     // Close dropdowns on click outside
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -88,9 +71,7 @@ function Header() {
     }, [])
 
     const handleLogout = () => {
-        localStorage.removeItem('token')
-        localStorage.removeItem('user')
-        setUser(null)
+        logout()
         setIsUserDropdownOpen(false)
         navigate('/login')
     }

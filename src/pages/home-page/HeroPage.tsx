@@ -298,6 +298,7 @@ function HeroPage() {
               />
             </div>
 
+
             {/* Search Button */}
             <button
               type="submit"
