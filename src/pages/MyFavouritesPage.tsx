@@ -11,7 +11,8 @@ function MyFavouritesPage() {
   const fetchFavourites = async () => {
     try {
       const res = await getFavourites()
-      setFavourites(res.data.data)
+      setFavourites(res.data.data.favourites)
+      console.log(res.data.data.favourites)
     } catch (err) {
       toast.error('Failed to load your favourite operators')
     } finally {
@@ -27,7 +28,7 @@ function MyFavouritesPage() {
     try {
       await removeFavourite(partnerId)
       toast.success('Removed from favourites')
-      setFavourites(favourites.filter(f => f.operator?.accountId !== partnerId))
+      setFavourites(favourites.filter(f => f.partner?.account._id !== partnerId))
     } catch (err) {
       toast.error('Failed to remove favourite')
     }
@@ -49,38 +50,38 @@ function MyFavouritesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {favourites.map(item => {
-            const op = item.operator
-            if (!op) return null
-            const opId = op.accountId
-            
+            const info = item.partner
+            const opId = item.partnerId
+            console.log(info)
+
             return (
-              <div key={item.favouriteId} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-4">
+              <div key={item._id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-4">
                 <div className="flex items-center gap-4">
-                  {op.profilePicture ? (
-                    <img src={op.profilePicture} alt={op.operatorName} className="w-16 h-16 rounded-full object-cover border border-slate-100" />
+                  {info.information.profilePicture ? (
+                    <img src={info.information.profilePicture} alt={info.information.operatorName} className="w-16 h-16 rounded-full object-cover border border-slate-100" />
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xl">
-                      {op.operatorName.charAt(0)}
+                      {info.information.operatorName.charAt(0)}
                     </div>
                   )}
                   <div>
-                    <h3 className="font-bold text-lg text-slate-800">{op.operatorName}</h3>
+                    <h3 className="font-bold text-lg text-slate-800">{info.information.operatorName}</h3>
                     <div className="text-sm text-slate-500 flex items-center gap-1">
                       <span className="text-yellow-400">★</span>
-                      <span>{op.ratingAvg ? op.ratingAvg.toFixed(1) : 'New'}</span>
-                      {op.totalReviews !== undefined && <span className="text-xs">({op.totalReviews} reviews)</span>}
+                      <span>{info.information.ratingAvg ? info.information.ratingAvg.toFixed(1) : 'New'}</span>
+                      {info.information.totalReviews !== undefined && <span className="text-xs">({info.information.totalReviews} reviews)</span>}
                     </div>
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-100">
-                  <Link 
+                  <Link
                     to={`/operators/${opId}`}
                     className="text-sm font-bold text-primary hover:underline"
                   >
                     View Details
                   </Link>
-                  <button 
+                  <button
                     onClick={() => handleRemove(opId as string)}
                     className="text-sm font-bold text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors"
                   >

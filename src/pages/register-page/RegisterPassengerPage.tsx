@@ -164,13 +164,9 @@ function RegisterPassengerPage() {
 
     try {
       const result = await loginWithGoogle(idToken)
-<<<<<<< HEAD
-      login(result.data.account, result.data.token)
-=======
       localStorage.setItem('token', result.data.token)
       localStorage.setItem('user', JSON.stringify(result.data.account))
       toast.success('Signed in successfully with Google!')
->>>>>>> cb94e3795164dbe8a556bc40106880fc220f368c
       navigate('/')
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.data) {

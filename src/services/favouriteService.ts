@@ -2,7 +2,13 @@ import api from './api'
 import type { FavouriteItem, AddFavouriteRequest } from '../types/favourite'
 
 export const getFavourites = () => {
-  return api.get<{ message: string; data: FavouriteItem[] }>('/customer/favourites')
+  return api.get<{
+    success: boolean
+    message: string
+    data: {
+      favourites: FavouriteItem[]
+    }
+  }>('/customer/favourites/operators')
 }
 
 export const addFavourite = (data: AddFavouriteRequest) => {
@@ -10,5 +16,5 @@ export const addFavourite = (data: AddFavouriteRequest) => {
 }
 
 export const removeFavourite = (partnerId: string) => {
-  return api.delete<{ message: string }>(`/customer/favourites/${partnerId}`)
+  return api.delete<{ message: string }>(`/customer/favourites/operators/${partnerId}`)
 }
