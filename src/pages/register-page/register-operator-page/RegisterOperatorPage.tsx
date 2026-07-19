@@ -65,6 +65,7 @@ function RegisterOperatorPage() {
   // Continue login form
   const [continueEmail, setContinueEmail] = useState('')
   const [continuePassword, setContinuePassword] = useState('')
+  const [showContinuePassword, setShowContinuePassword] = useState(false)
   const [licenseStatus, setLicenseStatus] = useState<string>('')
   const [rejectionReason, setRejectionReason] = useState<string>('')
   const [continueOperatorName, setContinueOperatorName] = useState('')
@@ -128,6 +129,16 @@ function RegisterOperatorPage() {
     }
     fetchPlans()
   }, [])
+
+  // Sync selectedPlan when plans load or selectedPlanId changes
+  useEffect(() => {
+    if (selectedPlanId && plans.length > 0) {
+      const matched = plans.find(p => p._id === selectedPlanId)
+      if (matched) {
+        setSelectedPlan(matched)
+      }
+    }
+  }, [selectedPlanId, plans])
 
   // Pre-fill plan from URL
   useEffect(() => {
@@ -324,6 +335,9 @@ function RegisterOperatorPage() {
         setLicenseStatus(result.data.licenseStatus)
         setRejectionReason(result.data.rejectionReason || '')
         setContinueOperatorName(result.data.partnerInfo.operatorName)
+        if (result.data.partnerInfo.selectedPlanId) {
+          setSelectedPlanId(result.data.partnerInfo.selectedPlanId)
+        }
 
         if (result.data.licenseStatus === 'APPROVED') {
           setContinueStep(1) // Go to SePay step
@@ -402,22 +416,6 @@ function RegisterOperatorPage() {
       toast.error(errMsg)
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const checkPaymentStatus = async () => {
-    if (!transaction) return
-    try {
-      const statusRes = await getSubscriptionStatus(transaction._id)
-      if (statusRes.success && statusRes.data.status === 'SUCCESS') {
-        cleanupIntervals()
-        setContinueStep(3)
-      } else if (statusRes.success && statusRes.data.status === 'FAILED') {
-        cleanupIntervals()
-        setApiError('Payment verification failed.')
-      }
-    } catch (err) {
-      console.error('Error checking payment status:', err)
     }
   }
 
@@ -621,8 +619,26 @@ function RegisterOperatorPage() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">Password</label>
-                    <input type="password" placeholder="••••••••" value={continuePassword} onChange={(e) => setContinuePassword(e.target.value)}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10" />
+                    <div className="relative">
+                      <input type={showContinuePassword ? 'text' : 'password'} placeholder="••••••••" value={continuePassword} onChange={(e) => setContinuePassword(e.target.value)}
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-2.5 pr-10 text-[14px] text-slate-800 outline-none transition-all duration-300 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10" />
+                      <button
+                        type="button"
+                        onClick={() => setShowContinuePassword(!showContinuePassword)}
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-650 focus:outline-none cursor-pointer"
+                      >
+                        {showContinuePassword ? (
+                          <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <button type="button" onClick={handleContinueLogin} disabled={isLoading}
                     className="w-full rounded-full btn-premium-gradient py-2.5 text-[14px] font-bold cursor-pointer shadow-md hover:shadow-lg shadow-primary/20 active:scale-[0.98] transition-all disabled:opacity-75">
@@ -641,7 +657,7 @@ function RegisterOperatorPage() {
             {continueStep === -1 && (
               <div className="w-full max-w-2xl mx-auto space-y-6 animate-fade-in">
                 <div className="text-center space-y-2">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-red-500 to-rose-400 text-white flex items-center justify-center mx-auto shadow-lg shadow-red-500/20 border-2 border-white">
+                  <div className="w-16 h-16 rounded-2xl bg-linear-to-tr from-red-500 to-rose-400 text-white flex items-center justify-center mx-auto shadow-lg shadow-red-500/20 border-2 border-white">
                     <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
@@ -703,7 +719,7 @@ function RegisterOperatorPage() {
 
             {/* Continue Step 2: Payment */}
             {continueStep === 2 && transaction && (
-              <Step4Payment transaction={transaction} timeLeft={timeLeft} formatTime={formatTime} onCheckStatus={checkPaymentStatus} />
+              <Step4Payment transaction={transaction} timeLeft={timeLeft} formatTime={formatTime} />
             )}
 
             {/* Continue Step 3: Success */}

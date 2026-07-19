@@ -68,7 +68,7 @@ function TicketPage() {
 
         // If tickets array is empty, reconstruct from booking detail seats list
         if (loadedTickets.length === 0 && detailRes.data.seats) {
-          loadedTickets = detailRes.data.seats.map((seat, index) => ({
+          loadedTickets = detailRes.data.seats.map((seat: any, index: number) => ({
             ticketId: seat.ticketId || `${bookingData!.id || bookingData!._id || ''}-${index}`,
             ticketCode: seat.ticketId || `${bookingData!.bookingCode}-${seat.seatCode}`,
             bookingId: bookingData!.id || bookingData!._id || '',

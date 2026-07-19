@@ -28,6 +28,7 @@ const VerifyEmailPage = lazy(() => import('../pages/verify-page/VerifyEmailPage'
 const MyFavouritesPage = lazy(() => import('../pages/MyFavouritesPage'))
 const MyReportsPage = lazy(() => import('../pages/MyReportsPage'))
 const MyFeedbacksPage = lazy(() => import('../pages/MyFeedbacksPage'))
+const LookupPage = lazy(() => import('../pages/LookupPage'))
 
 const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
   <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>}>
@@ -133,6 +134,10 @@ export const router = createBrowserRouter([
       {
         path: 'blog/:id',
         element: <SuspenseWrapper><BlogDetailPage /></SuspenseWrapper>
+      },
+      {
+        path: 'lookup',
+        element: <SuspenseWrapper><LookupPage /></SuspenseWrapper>
       }
     ],
   },

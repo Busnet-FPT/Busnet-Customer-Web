@@ -1,3 +1,30 @@
+export interface RouteInfo {
+  routeName: string
+  originProvince: string
+  originDistrict: string | null
+  destinationProvince: string
+  destinationDistrict: string | null
+  distanceKm: number
+  estimatedDuration: string
+  origin_representativeAddress?: string
+  destination_representativeAddress?: string
+}
+
+export interface ScheduleInfo {
+  scheduleId: string
+  scheduleCode: string
+  departureTime: string
+  arrivalTime: string
+  recurrenceType: string
+}
+
+export interface BusInfo {
+  busId: string
+  busName: string
+  busType: string
+  totalSeats: number
+  licensePlate: string
+  images: string[]
 export interface BookingRequest {
   tripId: string
   seatCodes: string[]
@@ -29,29 +56,6 @@ export interface PartnerInfo {
   isVerified?: boolean
 }
 
-export interface TripRoute {
-  _id?: string
-  routeName: string
-  originProvince: string
-  originDistrict?: string | null
-  destinationProvince: string
-  destinationDistrict?: string | null
-  distanceKm?: number
-  estimatedDuration?: string
-  origin_representativeAddress?: string
-  destination_representativeAddress?: string
-}
-
-export interface TripBus {
-  _id?: string
-  busId?: string
-  busName: string
-  busType: string
-  totalSeats: number
-  licensePlate: string
-  images?: string[]
-}
-
 export interface TripSeat {
   seatCode: string
   price: number
@@ -67,81 +71,195 @@ export interface TripItem {
   _id?: string
   tripId?: string
   tripCode?: string
-  route: TripRoute | null
-  bus: TripBus | null
+  route: RouteInfo | null
+  schedule?: ScheduleInfo | null
+  bus: BusInfo | null
   operator: PartnerInfo | null
-  partner?: PartnerInfo | null
   departureDate: string
-  departureTime?: string
-  actualDepartureTime?: number
+  departureTime: string
   arrivalTime?: string
+  actualDepartureTime?: number
   actualArrivalTime?: number
   totalSeats: number
   availableSeats: number
   bookedSeats?: number
   heldSeats?: number
   status: string
-  price?: number
+  price: number
+  priceOverride?: number
   minPrice?: number
   seats?: TripSeat[]
 }
 
+export interface BookingRequest {
+  tripId: string
+  seatCodes: string[]
+  pickupPoint_name: string
+  pickupPoint_address: string
+  pickupPoint_time: string
+  dropoffPoint_name: string
+  dropoffPoint_address: string
+  dropoffPoint_time: string
+  passengerName: string
+  passengerPhone: string
+  passengerEmail: string
+  customerNote?: string
+}
+
 export interface BookingInfo {
-  _id?: string
   id?: string
+  _id?: string
   bookingCode: string
   status: string
-  payment_status: string
+
+  // FE cũ dùng camelCase
   paymentStatus?: string
+
+  // Backend hiện tại trả snake_case
+  payment_status?: string
+
   total: number
-  payment_amount?: number
-  expiresAt?: string
-  confirmedAt?: string
-  cancelReason?: string
-  cancelResponse?: string
-  cancelRequestedAt?: string
-  cancelledAt?: string
+  expiresAt: string | null
+  confirmedAt?: string | null
+  cancelledAt?: string | null
   createdAt?: string
   updatedAt?: string
+
+  // các field khác backend populate thêm
+  tripId?: any
+  partnerId?: any
+  payment_transactionId?: string
+  payment_amount?: number
   passengerName?: string
   passengerPhone?: string
   passengerEmail?: string | null
-  customerNote?: string
+
+  // Pickup and Dropoff fields
   pickupPoint_name?: string
   pickupPoint_address?: string
   pickupPoint_time?: string
   dropoffPoint_name?: string
   dropoffPoint_address?: string
   dropoffPoint_time?: string
-}
-
-export interface BookingSeat {
-  ticketId?: string
-  seatCode: string
-  price: number
+  customerNote?: string
 }
 
 export interface PaymentInfo {
   transactionId: string | null
   status?: string
   gateway: string
+
+  // hiển thị
   bankName?: string
+
+  // mã bank thật để QR: VPB, VCB, ACB...
   bankCode?: string
+
+  // số tài khoản
   bankNumber?: string
   accountNumber?: string
+
+  // tên chủ tài khoản
   bankAccountName?: string
   accountName?: string
+
   amount: number
   currency?: string
-  content: string
-  qrUrl: string | null
+  content?: string | null
+  qrUrl?: string | null
   expiresAt?: string | null
+}
+
+export interface BookingResponseData {
+  booking: BookingInfo
+  seats: Array<TripSeat>
+  payment: PaymentInfo
+  serverTime?: string
+}
+
+export interface BookingResponse {
+  success: boolean
+  message: string
+  data: BookingResponseData
+}
+
+export interface BookingPaymentResponse {
+  success: boolean
+  message: string
+  data: {
+    booking: BookingInfo
+    payment: PaymentInfo
+    serverTime?: string
+  }
+}
+
+export interface BookingStatusResponse {
+  success: boolean
+  message: string
+  data: {
+    bookingCode?: string
+    status: string
+
+    paymentStatus?: string
+    payment_status?: string
+
+    total: number
+    payment_amount?: number
+    expiresAt: string | null
+    confirmedAt: string | null
+    cancelledAt?: string | null
+    createdAt?: string
+    updatedAt?: string
+    serverTime?: string
+    transaction?: any
+  }
+}
+
+export interface BookingDetailResponse {
+  success: boolean
+  message: string
+  data: {
+    booking: BookingInfo
+    seats: Array<TripSeat>
+    trip: TripItem
+    transaction?: any
+  }
+}
+
+export interface BookingHistoryItem {
+  bookingId?: string
+  bookingCode: string
+  status: string
+  paymentStatus: string
+  total: number
+  expiresAt: string | null
+  confirmedAt: string | null
+  tripId: string
+  trip?: TripItem
+  seatCodes: string[]
+  passengerName: string
+  passengerPhone: string
+  createdAt: string
+}
+
+export interface BookingHistoryResponse {
+  success: boolean
+  message: string
+  data: {
+    bookings: BookingHistoryItem[]
+    pagination: {
+      totalItems: number
+      totalPages: number
+      currentPage: number
+      limit: number
+    }
+  }
 }
 
 export interface TicketInfo {
   ticketId: string
   ticketCode: string
-  bookingId: string
+  bookingId?: string
   bookingCode: string
   seatCode: string
   price: number
@@ -152,57 +270,29 @@ export interface TicketInfo {
   updatedAt: string
 }
 
-export interface BookingResponse {
-  success: boolean
-  message: string
-  data: {
-    booking: BookingInfo
-    seats: BookingSeat[]
-    payment: PaymentInfo
-    serverTime: string
-  }
-}
-
-export interface BookingStatusResponse {
-  success: boolean
-  message: string
-  data: BookingInfo & { serverTime: string }
-}
-
-export interface BookingDetailResponse {
-  success: boolean
-  message: string
-  data: {
-    booking: BookingInfo
-    seats: BookingSeat[]
-    transaction?: any
-    trip?: TripItem
-  }
-}
-
-export interface BookingHistoryResponse {
-  success: boolean
-  message: string
-  data: {
-    bookings: any[]
-    pagination: {
-      totalItems: number
-      totalPages: number
-      currentPage: number
-      limit: number
-    }
-  }
-}
-
 export interface TicketResponse {
   success: boolean
   message: string
   data: {
-    bookingCode: string
     tickets: TicketInfo[]
     booking: BookingInfo
     trip: TripItem
   }
+}
+
+export interface TripDetailResponse {
+  success: boolean
+  message: string
+  data: {
+    trip: TripItem
+  }
+}
+
+export interface PointOption {
+  name: string
+  address: string
+  time: string
+  orderIndex: number
 }
 
 export interface BookingOptionsResponse {
@@ -215,19 +305,12 @@ export interface BookingOptionsResponse {
   }
 }
 
-export interface BookingPaymentResponse {
+export interface TripSeatsResponse {
   success: boolean
   message: string
   data: {
-    booking: BookingInfo
-    payment: PaymentInfo
-    serverTime: string
+    tripId: string
+    tripCode: string
+    seats: TripSeat[]
   }
-}
-
-export interface BookingHistoryItem extends BookingInfo {
-  bookingId?: string;
-  tripId?: any;
-  trip?: any;
-  partnerId?: any;
 }

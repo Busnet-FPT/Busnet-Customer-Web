@@ -20,7 +20,15 @@ import {
 
 function ProfilePage() {
   const navigate = useNavigate()
-  const { user, setUser } = useAuth()
+  const { user } = useAuth()
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/login')
+    }
+  }, [user, navigate])
+
+  // Profile data state
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'info' | 'password'>('info')
