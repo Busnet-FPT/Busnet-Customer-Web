@@ -1,36 +1,24 @@
-import type { TripItem, TripSeat } from './trip'
+import type { TripItem, TripSeat, PartnerInfo, RouteInfo, BusInfo, ScheduleInfo } from './trip'
 
-export type { TripItem, TripSeat }
+export type { TripItem, TripSeat, PartnerInfo, RouteInfo, BusInfo, ScheduleInfo }
 
-export interface RouteInfo {
-  routeName: string
-  originProvince: string
-  originDistrict: string | null
-  destinationProvince: string
-  destinationDistrict: string | null
-  distanceKm: number
-  estimatedDuration: string
-  origin_representativeAddress?: string
-  destination_representativeAddress?: string
-  origin_provinceName?: string
-  destination_provinceName?: string
-}
-
-export interface ScheduleInfo {
-  scheduleId: string
-  scheduleCode: string
-  departureTime: string
-  arrivalTime: string
-  recurrenceType: string
-}
-
-export interface BusInfo {
-  busId: string
-  busName: string
-  busType: string
-  totalSeats: number
-  licensePlate: string
-  images: string[]
+export interface TicketInfo {
+  ticketId: string
+  ticketCode?: string
+  bookingId: string
+  seatCode: string
+  status?: string
+  passengerName?: string
+  passengerPhone?: string
+  passengerEmail?: string
+  qrCodeUrl?: string
+  price: number
+  pickupPoint_name?: string
+  pickupPoint_address?: string
+  pickupPoint_time?: string
+  dropoffPoint_name?: string
+  dropoffPoint_address?: string
+  dropoffPoint_time?: string
 }
 
 export interface PointOption {
@@ -55,16 +43,32 @@ export interface BookingRequest {
 }
 
 export interface BookingInfo {
+  _id?: string
+  id?: string
   bookingId: string
   bookingCode: string
   status: string
   paymentStatus: string
+  payment_status?: string
   total: number
   expiresAt: string | null
   confirmedAt: string | null
+  createdAt?: string
   tripId: string
   paymentTransactionId?: string | null
+  passengerName?: string
+  passengerPhone?: string
+  passengerEmail?: string
+  customerNote?: string
+  pickupPoint_name?: string
+  pickupPoint_address?: string
+  pickupPoint_time?: string
+  dropoffPoint_name?: string
+  dropoffPoint_address?: string
+  dropoffPoint_time?: string
 }
+
+export type BookingHistoryItem = BookingInfo
 
 export interface PaymentInfo {
   transactionId: string | null
@@ -96,9 +100,11 @@ export interface BookingStatusResponse {
   data: {
     status: string
     paymentStatus: string
+    payment_status?: string
     total: number
     expiresAt: string | null
     confirmedAt: string | null
+    serverTime?: string
     transaction?: any
   }
 }

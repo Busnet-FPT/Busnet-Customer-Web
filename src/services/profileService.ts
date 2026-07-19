@@ -55,7 +55,7 @@ export const getProfile = async (): Promise<ProfileResponse> => {
  * PATCH /api/customer/profile/me
  */
 export const updateProfile = async (data: UpdateProfileData): Promise<ProfileResponse> => {
-  if (data.profilePicture instanceof File) {
+  if (data.profilePicture) {
     const formData = new FormData()
     if (data.fullName) formData.append('fullName', data.fullName)
     if (data.phone) formData.append('phone', data.phone)

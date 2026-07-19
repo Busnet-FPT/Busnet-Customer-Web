@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
@@ -20,7 +20,7 @@ import {
 
 function ProfilePage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, setUser } = useAuth()
 
   useEffect(() => {
     if (!user) {

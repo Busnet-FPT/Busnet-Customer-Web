@@ -251,8 +251,8 @@ function TicketPage() {
                 {/* Real QR Code API */}
                 <div className="p-2 bg-white border border-slate-200 rounded-xl flex flex-col items-center gap-1.5 shadow-inner">
                   <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(ticket.ticketCode)}&margin=1`} 
-                    alt={`QR Code for ${ticket.ticketCode}`}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(ticket.ticketCode || '')}&margin=1`} 
+                    alt={`QR Code for ${ticket.ticketCode || ''}`}
                     className="w-20 h-20 object-contain mix-blend-multiply pointer-events-none"
                     loading="lazy"
                   />

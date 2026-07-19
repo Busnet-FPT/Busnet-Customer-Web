@@ -3,48 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { getPopularRoutes } from '../../services/tripService'
 import type { PopularRouteInfo } from '../../services/tripService'
 
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=600&auto=format&fit=crop"
-
-const getDestinationImage = (destination: string): string => {
-  const destClean = destination.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-  
-  if (destClean.includes("ho chi minh") || destClean.includes("hcm") || destClean.includes("sai gon")) {
-    return "https://images.unsplash.com/photo-1508919801845-fc2ae1bc2a28?q=80&w=600&auto=format&fit=crop"
-  }
-  if (destClean.includes("ha noi")) {
-    return "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=600&auto=format&fit=crop"
-  }
-  if (destClean.includes("da lat") || destClean.includes("lam dong")) {
-    return "https://images.unsplash.com/photo-1583002621948-406a4b1ca8c3?q=80&w=600&auto=format&fit=crop"
-  }
-  if (destClean.includes("nha trang") || destClean.includes("khanh hoa")) {
-    return "https://images.unsplash.com/photo-1540206351-d6465b3ac5c1?q=80&w=600&auto=format&fit=crop"
-  }
-  if (destClean.includes("da nang")) {
-    return "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=600&auto=format&fit=crop"
-  }
-  if (destClean.includes("hai phong")) {
-    return "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?q=80&w=600&auto=format&fit=crop"
-  }
-  if (destClean.includes("can tho")) {
-    return "https://images.unsplash.com/photo-1620121692029-d088224ddc74?q=80&w=600&auto=format&fit=crop"
-  }
-  if (destClean.includes("cat ba") || destClean.includes("cat hai")) {
-    return "https://images.unsplash.com/photo-1528127269322-539801943592?q=80&w=600&auto=format&fit=crop"
-  }
-  if (destClean.includes("quang ninh") || destClean.includes("ha long")) {
-    return "https://images.unsplash.com/photo-1605538032432-a9f0c8d9baac?q=80&w=600&auto=format&fit=crop"
-  }
-  if (destClean.includes("ninh binh")) {
-    return "https://images.unsplash.com/photo-1590766940554-634a7ed41450?q=80&w=600&auto=format&fit=crop"
-  }
-  if (destClean.includes("hue")) {
-    return "https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=600&auto=format&fit=crop"
-  }
-  
-  return FALLBACK_IMAGE
-}
-
 export default function PopularRoutesSection() {
   const navigate = useNavigate()
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -105,7 +63,7 @@ export default function PopularRoutesSection() {
         <h2 className="text-h2 font-bold font-primary text-slate-800 text-center">Popular Routes</h2>
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 animate-pulse">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-72 bg-slate-200 rounded-2xl"></div>
+            <div key={i} className="h-44 bg-slate-200 rounded-2xl"></div>
           ))}
         </div>
       </div>
@@ -168,79 +126,63 @@ export default function PopularRoutesSection() {
           className="flex gap-6 overflow-x-auto scroll-smooth scrollbar-none snap-x snap-mandatory py-4 px-1"
         >
           {routes.map((route) => {
-            const imgUrl = getDestinationImage(route.destination_provinceName)
             return (
               <div
                 key={route._id}
                 onClick={() => handleRouteClick(route)}
-                className="snap-start shrink-0 w-[280px] sm:w-[calc(50%-12px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] overflow-hidden rounded-2xl bg-white shadow-xs border border-slate-100 hover:shadow-xl hover:border-slate-200/80 transition-all duration-300 group cursor-pointer flex flex-col justify-between"
+                className="snap-start shrink-0 w-[280px] sm:w-[calc(50%-12px)] md:w-[calc(33.333%-16px)] lg:w-[calc(25%-18px)] p-6 rounded-2xl bg-white shadow-xs border border-slate-200/90 hover:shadow-xl hover:border-primary/40 transition-all duration-300 group cursor-pointer flex flex-col justify-between text-left"
               >
-                {/* Card Thumbnail */}
-                <div className="relative h-44 overflow-hidden">
-                  <img
-                    src={imgUrl}
-                    alt={route.routeName}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                  {/* Visual gradient filter over the image */}
-                  <div className="absolute inset-0 bg-linear-to-t from-slate-950/60 to-transparent opacity-80" />
-                  
-                  {/* Distance Badge on Image */}
-                  <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs text-[10px] font-extrabold uppercase text-slate-800 px-2 py-0.5 rounded-md shadow-xs font-primary">
-                    ★ Popular
-                  </span>
-
-                  {/* Destination overlay text */}
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
-                    <p className="text-xs font-semibold font-secondary opacity-95">To destination</p>
-                    <p className="text-lg font-bold font-primary tracking-wide truncate">{route.destination_provinceName}</p>
-                  </div>
-                </div>
-
-                {/* Card Details */}
-                <div className="p-4 grow flex flex-col justify-between">
-                  <div>
+                <div>
+                  {/* Top Badge & Destination Header */}
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="text-[10px] font-extrabold uppercase text-primary bg-primary/10 px-2.5 py-1 rounded-md font-primary tracking-wider">
+                      ★ Popular
+                    </span>
                     {route.operatorName && (
-                      <span className="text-[10px] font-bold text-slate-400 font-primary uppercase tracking-wider block mb-1">
+                      <span className="text-[10px] font-bold text-slate-400 font-primary uppercase tracking-wider truncate max-w-[120px]">
                         {route.operatorName}
                       </span>
                     )}
-                    <h3 className="font-primary font-bold text-slate-800 text-sm group-hover:text-primary transition-colors line-clamp-1">
-                      {route.routeName}
-                    </h3>
-                    
-                    {/* Stats Row */}
-                    <div className="flex items-center gap-3.5 text-xs text-slate-500 font-medium font-secondary mt-2">
-                      <span className="flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                        </svg>
-                        {route.distanceKm} km
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        {formatDuration(route.estimatedDuration)}
-                      </span>
-                    </div>
                   </div>
 
-                  {/* Price and CTA */}
-                  <div className="mt-4 pt-3.5 border-t border-slate-50 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 block font-primary uppercase tracking-wider">Starting from</span>
-                      <span className="text-sm font-extrabold text-primary font-secondary">
-                        {formatPrice(route.minPrice)}
-                      </span>
-                    </div>
-                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-xs">
-                      <svg className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                  <h3 className="font-primary font-bold text-slate-900 text-base group-hover:text-primary transition-colors line-clamp-1">
+                    {route.routeName}
+                  </h3>
+                  
+                  <p className="text-xs text-slate-400 font-secondary mt-1">
+                    To destination: <span className="font-bold text-slate-700">{route.destination_provinceName}</span>
+                  </p>
+
+                  {/* Stats Row */}
+                  <div className="flex items-center gap-3.5 text-xs text-slate-500 font-medium font-secondary mt-3">
+                    <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                      <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                       </svg>
+                      {route.distanceKm} km
+                    </span>
+                    <span className="flex items-center gap-1.5 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-100">
+                      <svg className="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {formatDuration(route.estimatedDuration)}
                     </span>
                   </div>
+                </div>
+
+                {/* Price and CTA */}
+                <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 block font-primary uppercase tracking-wider">Starting from</span>
+                    <span className="text-base font-extrabold text-primary font-secondary">
+                      {formatPrice(route.minPrice)}
+                    </span>
+                  </div>
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-slate-50 text-slate-400 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-xs">
+                    <svg className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </span>
                 </div>
               </div>
             )

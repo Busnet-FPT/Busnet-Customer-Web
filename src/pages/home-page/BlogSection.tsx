@@ -105,16 +105,16 @@ export default function BlogSection() {
           {/* Carousel Track Container */}
           <div
             ref={scrollContainerRef}
-            className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-none pb-4"
+            className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory scrollbar-none pb-4 items-stretch"
           >
             {posts.map((post) => (
               <div
                 key={post._id}
                 onClick={() => navigate(`/blog/${post.slug}`)}
-                className="snap-start shrink-0 w-[85%] sm:w-[calc(50%-12px)] md:w-[calc(33.333%-16px)] group bg-white rounded-3xl border border-slate-100 shadow-xs hover:shadow-xl hover:border-slate-200/50 transition-all duration-350 overflow-hidden cursor-pointer hover:-translate-y-1 flex flex-col h-full"
+                className="snap-start shrink-0 w-[85%] sm:w-[calc(50%-12px)] md:w-[calc(33.333%-16px)] group bg-white rounded-3xl border border-slate-100 shadow-xs hover:shadow-xl hover:border-slate-200/50 transition-all duration-350 overflow-hidden cursor-pointer hover:-translate-y-1 flex flex-col"
               >
                 {/* Cover Image */}
-                <div className="relative aspect-1.7/1 w-full bg-slate-100 shrink-0 overflow-hidden">
+                <div className="relative h-48 w-full bg-slate-100 shrink-0 overflow-hidden">
                   <img
                     src={post.coverImage}
                     alt={post.title}

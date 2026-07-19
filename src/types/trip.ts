@@ -15,6 +15,10 @@ export interface RouteInfo {
   destinationDistrict: string | null
   distanceKm: number
   estimatedDuration: string
+  origin_representativeAddress?: string
+  destination_representativeAddress?: string
+  origin_provinceName?: string
+  destination_provinceName?: string
 }
 
 export interface ScheduleInfo {
@@ -56,6 +60,7 @@ export interface TripSeat {
 }
 
 export interface TripItem {
+  _id?: string
   tripId: string
   tripCode: string
   route: RouteInfo | null
@@ -67,6 +72,8 @@ export interface TripItem {
   departureDate: string
   departureTime: string
   arrivalTime: string
+  actualDepartureTime?: number
+  actualArrivalTime?: number
   totalSeats: number
   availableSeats: number
   bookedSeats: number
