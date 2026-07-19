@@ -19,8 +19,14 @@ import {
   IconDeviceUsb,
   IconMail,
   IconMap2,
+  IconHeart,
+  IconHeartFilled,
   IconSearch
 } from '@tabler/icons-react'
+import { useAuth } from '../../contexts/AuthContext'
+import { toast } from 'react-hot-toast'
+import { getFavouriteStatus, addFavourite, removeFavourite } from '../../services/favouriteService'
+import WriteOperatorFeedbackModal from '../../components/WriteOperatorFeedbackModal'
 import {
   getOperatorDetail,
   type OperatorDetailResponse,
@@ -37,6 +43,10 @@ function OperatorDetailPage() {
   const [expandedRoutes, setExpandedRoutes] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState<'routes' | 'info'>('routes')
   const [routeSearch, setRouteSearch] = useState('')
+  const { user } = useAuth()
+  const [isFavourite, setIsFavourite] = useState(false)
+  const [isFavouriteLoading, setIsFavouriteLoading] = useState(false)
+  const [showOperatorFeedbackModal, setShowOperatorFeedbackModal] = useState(false)
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -50,6 +60,12 @@ function OperatorDetailPage() {
         if (result.routes.length > 0) {
           setExpandedRoutes(new Set([result.routes[0]._id]))
         }
+        if (user && result.partner?.accountId) {
+          try {
+             const statusRes = await getFavouriteStatus(result.partner.accountId)
+             setIsFavourite(statusRes.data.data.isFavourite)
+          } catch (e) {}
+        }
       } catch (err: any) {
         console.error('Failed to fetch operator detail:', err)
         setError(err?.response?.data?.message || 'Failed to load operator details.')
@@ -58,7 +74,40 @@ function OperatorDetailPage() {
       }
     }
     fetchDetail()
-  }, [id])
+  }, [id, user])
+
+  const toggleFavourite = async () => {
+    if (!user) {
+      toast.error('Please login to save favourite operators')
+      return
+    }
+    if (!data?.partner?.accountId || isFavouriteLoading) return
+
+    setIsFavouriteLoading(true)
+    try {
+      if (isFavourite) {
+        await removeFavourite(data.partner.accountId)
+        setIsFavourite(false)
+        toast.success('Removed from favourites')
+      } else {
+        await addFavourite(data.partner.accountId)
+        setIsFavourite(true)
+        toast.success('Added to favourites')
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to update favourite status')
+    } finally {
+      setIsFavouriteLoading(false)
+    }
+  }
+
+  const openOperatorFeedback = () => {
+    if (!user) {
+      toast.error('Please login to write feedback')
+      return
+    }
+    setShowOperatorFeedbackModal(true)
+  }
 
   const toggleRoute = (routeId: string) => {
     setExpandedRoutes((prev) => {
@@ -223,7 +272,7 @@ function OperatorDetailPage() {
                 )}
               </div>
 
-              <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-4 flex-wrap mt-2">
                 {/* Rating */}
                 <div className="flex items-center gap-1.5">
                   <div className="flex items-center gap-0.5">
@@ -252,6 +301,32 @@ function OperatorDetailPage() {
                   </>
                 )}
               </div>
+            </div>
+            
+            {/* Action buttons (Favourite) */}
+            <div className="md:ml-auto self-end mt-4 md:mt-0 flex items-center gap-3">
+              <button
+                onClick={openOperatorFeedback}
+                className="px-4 py-3 rounded-2xl bg-primary text-white hover:bg-blue-600 transition-all cursor-pointer font-bold text-xs"
+              >
+                Write Feedback
+              </button>
+              <button
+                onClick={toggleFavourite}
+                disabled={isFavouriteLoading}
+                className={`p-3 rounded-2xl flex items-center gap-2 transition-all cursor-pointer font-bold text-xs ${
+                  isFavourite 
+                    ? 'bg-rose-50 text-rose-600 border border-rose-200 shadow-sm' 
+                    : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                {isFavourite ? (
+                  <IconHeartFilled className={`w-5 h-5 ${isFavouriteLoading ? 'animate-pulse' : ''}`} />
+                ) : (
+                  <IconHeart className={`w-5 h-5 ${isFavouriteLoading ? 'animate-pulse' : ''}`} />
+                )}
+                <span className="hidden sm:inline">{isFavourite ? 'Saved' : 'Save'}</span>
+              </button>
             </div>
           </div>
         </div>
@@ -384,6 +459,18 @@ function OperatorDetailPage() {
             </div>
           )}
         </div>
+      )}
+
+      {showOperatorFeedbackModal && (
+        <WriteOperatorFeedbackModal
+          isOpen={true}
+          partnerId={partner.accountId}
+          operatorName={partner.operatorName}
+          onClose={() => setShowOperatorFeedbackModal(false)}
+          onSuccess={() => {
+            setShowOperatorFeedbackModal(false)
+          }}
+        />
       )}
     </div>
   )

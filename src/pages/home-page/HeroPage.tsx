@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSearchLocations } from '../../services/tripService'
+import { useAuth } from '../../contexts/AuthContext'
+import RecentSearches from '../../components/RecentSearches'
+import {
+  getSearchHistories,
+  saveSearchHistory,
+  deleteSearchHistory,
+  clearSearchHistories
+} from '../../services/searchHistoryService'
+import type { SearchHistoryItem } from '../../types/searchHistory'
 
 const VIETNAM_LOCATIONS = [
   "An Giang", "Bà Rịa - Vũng Tàu", "Bạc Liêu", "Bắc Giang", "Bắc Kạn", "Bắc Ninh", "Bến Tre", "Bình Dương", "Bình Định", "Bình Phước", "Bình Thuận", "Cà Mau", "Cao Bằng", "Cần Thơ", "Đà Nẵng", "Đắk Lắk", "Đắk Nông", "Điện Biên", "Đồng Nai", "Đồng Tháp", "Gia Lai", "Hà Giang", "Hà Nam", "Hà Nội", "Hà Tĩnh", "Hải Dương", "Hải Phòng", "Hậu Giang", "Hòa Bình", "Hưng Yên", "Khánh Hòa", "Nha Trang", "Kiên Giang", "Rạch Giá", "Phu Quốc", "Kon Tum", "Lai Châu", "Lạng Sơn", "Lào Cai", "Sapa", "Lâm Đồng", "Đà Lạt", "Long An", "Nam Định", "Nghệ An", "Vinh", "Ninh Bình", "Ninh Thuận", "Phú Thọ", "Phú Yên", "Tuy Hòa", "Quảng Bình", "Đồng Hới", "Quảng Nam", "Hội An", "Quảng Ngãi", "Quảng Ninh", "Hạ Long", "Quảng Trị", "Sóc Trăng", "Sơn La", "Tây Ninh", "Thái Bình", "Thái Nguyên", "Thanh Hóa", "Thừa Thiên Huế", "Huế", "Tiền Giang", "Hồ Chí Minh", "Trà Vinh", "Tuyên Quang", "Vĩnh Long", "Vĩnh Phúc", "Yên Bái"
@@ -8,6 +17,7 @@ const VIETNAM_LOCATIONS = [
 
 function HeroPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
   const [date, setDate] = useState('')
@@ -20,7 +30,28 @@ function HeroPage() {
   const [showOrigins, setShowOrigins] = useState(false)
   const [showDestinations, setShowDestinations] = useState(false)
 
+  const [searchHistories, setSearchHistories] = useState<SearchHistoryItem[]>([])
+
   const cleanStr = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+
+  const loadSearchHistories = async () => {
+    if (!user || user.role !== 'CUSTOMER') {
+      setSearchHistories([])
+      return
+    }
+    try {
+      const res = await getSearchHistories(3)
+      if (res.data?.success) {
+        setSearchHistories(res.data.data || [])
+      }
+    } catch (err) {
+      console.error('Could not load search history', err)
+    }
+  }
+
+  useEffect(() => {
+    loadSearchHistories()
+  }, [user])
 
   useEffect(() => {
     const fetchLocations = async () => {
@@ -67,7 +98,7 @@ function HeroPage() {
     setTo(temp)
   }
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!date) {
       alert('Please select a Departure Date.')
@@ -77,11 +108,50 @@ function HeroPage() {
       alert('Origin and destination cannot be the same.')
       return
     }
+
+    if (user && user.role === 'CUSTOMER') {
+      try {
+        await saveSearchHistory({
+          departureLocation: from.trim(),
+          arrivalLocation: to.trim(),
+          departureDate: date
+        })
+        loadSearchHistories()
+      } catch (error) {
+        console.error('Could not save search history', error)
+      }
+    }
+
     const params = new URLSearchParams()
     if (from.trim()) params.append('from', from.trim())
     if (to.trim()) params.append('to', to.trim())
     params.append('date', date)
     navigate(`/trips?${params.toString()}`)
+  }
+
+  const handleSelectHistoryItem = (item: SearchHistoryItem) => {
+    setFrom(item.departureLocation)
+    setTo(item.arrivalLocation)
+    const formattedDate = item.departureDate ? item.departureDate.split('T')[0] : ''
+    setDate(formattedDate)
+  }
+
+  const handleDeleteHistoryItem = async (id: string) => {
+    try {
+      await deleteSearchHistory(id)
+      setSearchHistories((prev) => prev.filter((item) => item._id !== id))
+    } catch (err) {
+      console.error('Failed to delete search history item', err)
+    }
+  }
+
+  const handleClearAllHistory = async () => {
+    try {
+      await clearSearchHistories()
+      setSearchHistories([])
+    } catch (err) {
+      console.error('Failed to clear search history', err)
+    }
   }
 
   return (
@@ -166,7 +236,7 @@ function HeroPage() {
         {/* Glassmorphic Search Widget */}
         <div
           id="search-widget"
-          className="mt-6 w-full max-w-4xl rounded-2xl border border-white/50 bg-white/90 p-4 shadow-2xl backdrop-blur-lg md:p-5 transition-all duration-500 hover:border-white/80 hover:shadow-blue-900/10"
+          className="relative z-40 mt-6 w-full max-w-4xl rounded-2xl border border-white/50 bg-white/90 p-4 shadow-2xl backdrop-blur-lg md:p-5 transition-all duration-500 hover:border-white/80 hover:shadow-blue-900/10"
         >
           <form onSubmit={handleSearch} className="grid gap-3.5 sm:grid-cols-2 md:grid-cols-4 items-end text-left">
             {/* From Field */}
@@ -189,7 +259,7 @@ function HeroPage() {
               />
               {/* Suggestions dropdown */}
               {showOrigins && filteredOrigins.length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl z-30 py-1">
+                <div className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-xl">
                   {filteredOrigins.map((item) => {
                     const active = isLocationActive(item, origins)
                     return active ? (
@@ -249,7 +319,7 @@ function HeroPage() {
               />
               {/* Suggestions dropdown */}
               {showDestinations && filteredDestinations.length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-1.5 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl z-30 py-1">
+                <div className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-xl">
                   {filteredDestinations.map((item) => {
                     const active = isLocationActive(item, destinations)
                     return active ? (
@@ -308,6 +378,16 @@ function HeroPage() {
             </button>
           </form>
         </div>
+
+        {/* Recent Searches */}
+        {user && user.role === 'CUSTOMER' && (
+          <RecentSearches
+            items={searchHistories}
+            onSelect={handleSelectHistoryItem}
+            onDelete={handleDeleteHistoryItem}
+            onClear={handleClearAllHistory}
+          />
+        )}
       </div>
 
       {/* Floating Speaker Control */}

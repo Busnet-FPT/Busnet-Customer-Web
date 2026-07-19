@@ -192,9 +192,9 @@ function LoginPage() {
                   <label htmlFor="password" className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">
                     Password
                   </label>
-                  <a href="/forgot-password" className="text-[11px] font-extrabold text-slate-500 hover:text-primary hover:underline font-primary uppercase tracking-wider">
+                  <Link to="/forgot-password" className="text-[11px] font-extrabold text-slate-500 hover:text-primary hover:underline font-primary uppercase tracking-wider">
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors">

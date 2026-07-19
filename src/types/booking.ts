@@ -25,6 +25,25 @@ export interface BusInfo {
   totalSeats: number
   licensePlate: string
   images: string[]
+export interface BookingRequest {
+  tripId: string
+  seatCodes: string[]
+  pickupPoint_name: string
+  pickupPoint_address: string
+  pickupPoint_time: string
+  dropoffPoint_name: string
+  dropoffPoint_address: string
+  dropoffPoint_time: string
+  passengerName: string
+  passengerPhone: string
+  passengerEmail?: string
+  customerNote?: string
+}
+
+export interface PointOption {
+  name: string
+  address: string
+  time: string
 }
 
 export interface PartnerInfo {

@@ -12,6 +12,7 @@ createRoot(document.getElementById('root')!).render(
     <Preloader />
     <AuthProvider>
       <RouterProvider router={router} />
+      <Toaster position="bottom-right" reverseOrder={false} />
     </AuthProvider>
     <Toaster position="bottom-right" reverseOrder={false} />
   </StrictMode>,

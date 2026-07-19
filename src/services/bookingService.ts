@@ -10,6 +10,19 @@ import type {
   BookingPaymentResponse
 } from '../types/booking'
 
+export interface BookingActionResponse {
+  success: boolean
+  message: string
+  data: {
+    bookingCode: string
+    status: string
+    payment_status: string
+    message?: string
+    releasedSeatCodes?: string[]
+    releasedCount?: number
+  }
+}
+
 /**
  * Fetch trip detail specifically for booking flow (to avoid modifying tripService)
  * GET /customer/trips/:tripId/booking-options
@@ -81,9 +94,20 @@ export const getBookingTickets = async (bookingCode: string): Promise<TicketResp
  * Cancel a pending booking
  * POST /customer/bookings/:bookingCode/cancel
  */
-export const cancelBooking = async (bookingCode: string, reason?: string): Promise<any> => {
+export const cancelBooking = async (bookingCode: string, reason?: string): Promise<BookingActionResponse> => {
   const response = await api.post(`/customer/bookings/${bookingCode}/cancel`, {
     reason: reason || 'Cancelled by customer'
+  })
+  return response.data
+}
+
+/**
+ * Request cancellation for a confirmed paid booking
+ * POST /customer/bookings/:bookingCode/cancel-request
+ */
+export const requestCancelBooking = async (bookingCode: string, reason: string): Promise<BookingActionResponse> => {
+  const response = await api.post(`/customer/bookings/${bookingCode}/cancel-request`, {
+    reason
   })
   return response.data
 }

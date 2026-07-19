@@ -5,6 +5,7 @@ import RequireAuth from '../guards/RequireAuth'
 
 const HomePage = lazy(() => import('../pages/home-page/HomePage'))
 const LoginPage = lazy(() => import('../pages/login-page/LoginPage'))
+const ForgotPasswordPage = lazy(() => import('../pages/forgot-password-page/ForgotPasswordPage'))
 const RegisterPage = lazy(() => import('../pages/register-page/RegisterPage'))
 const RegisterPassengerPage = lazy(() => import('../pages/register-page/RegisterPassengerPage'))
 const RegisterOperatorPage = lazy(() => import('../pages/register-page/register-operator-page/RegisterOperatorPage'))
@@ -50,6 +51,10 @@ export const router = createBrowserRouter([
         element: <SuspenseWrapper><LoginPage /></SuspenseWrapper>,
       },
       {
+        path: 'forgot-password',
+        element: <SuspenseWrapper><ForgotPasswordPage /></SuspenseWrapper>,
+      },
+      {
         path: 'verify-email',
         element: <SuspenseWrapper><VerifyEmailPage /></SuspenseWrapper>,
       },
@@ -80,19 +85,19 @@ export const router = createBrowserRouter([
       },
       {
         path: 'payment/:bookingCode',
-        element: <SuspenseWrapper><PaymentPage /></SuspenseWrapper>,
+        element: <SuspenseWrapper><RequireAuth><PaymentPage /></RequireAuth></SuspenseWrapper>,
       },
       {
         path: 'tickets/:bookingCode',
-        element: <SuspenseWrapper><TicketPage /></SuspenseWrapper>,
+        element: <SuspenseWrapper><RequireAuth><TicketPage /></RequireAuth></SuspenseWrapper>,
       },
       {
         path: 'my-bookings',
-        element: <SuspenseWrapper><MyBookingsPage /></SuspenseWrapper>,
+        element: <SuspenseWrapper><RequireAuth><MyBookingsPage /></RequireAuth></SuspenseWrapper>,
       },
       {
         path: 'my-bookings/:bookingCode',
-        element: <SuspenseWrapper><BookingDetailPage /></SuspenseWrapper>,
+        element: <SuspenseWrapper><RequireAuth><BookingDetailPage /></RequireAuth></SuspenseWrapper>,
       },
       {
         path: 'profile',
@@ -100,15 +105,15 @@ export const router = createBrowserRouter([
       },
       {
         path: 'my-favourites',
-        element: <SuspenseWrapper><MyFavouritesPage /></SuspenseWrapper>,
+        element: <SuspenseWrapper><RequireAuth><MyFavouritesPage /></RequireAuth></SuspenseWrapper>,
       },
       {
         path: 'my-reports',
-        element: <SuspenseWrapper><MyReportsPage /></SuspenseWrapper>,
+        element: <SuspenseWrapper><RequireAuth><MyReportsPage /></RequireAuth></SuspenseWrapper>,
       },
       {
         path: 'my-feedbacks',
-        element: <SuspenseWrapper><MyFeedbacksPage /></SuspenseWrapper>,
+        element: <SuspenseWrapper><RequireAuth><MyFeedbacksPage /></RequireAuth></SuspenseWrapper>,
       },
       {
         path: 'subscription',

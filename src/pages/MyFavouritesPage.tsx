@@ -1,19 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { toast } from 'react-hot-toast'
 import { getFavourites, removeFavourite } from '../services/favouriteService'
 import type { FavouriteItem } from '../types/favourite'
-import { toast } from 'react-hot-toast'
 
 function MyFavouritesPage() {
   const [favourites, setFavourites] = useState<FavouriteItem[]>([])
   const [loading, setLoading] = useState(true)
 
   const fetchFavourites = async () => {
+    setLoading(true)
     try {
       const res = await getFavourites()
-      setFavourites(res.data.data)
+      const rawData = res.data?.data
+      const list = Array.isArray(rawData)
+        ? rawData
+        : (rawData && typeof rawData === 'object' && Array.isArray((rawData as any).favourites))
+          ? (rawData as any).favourites
+          : []
+      setFavourites(list)
     } catch (err) {
       toast.error('Failed to load your favourite operators')
+      setFavourites([])
     } finally {
       setLoading(false)
     }
@@ -27,72 +35,80 @@ function MyFavouritesPage() {
     try {
       await removeFavourite(partnerId)
       toast.success('Removed from favourites')
-      setFavourites(favourites.filter(f => f.operator?.accountId !== partnerId))
+      setFavourites((prev) => prev.filter((item) => item.partnerId !== partnerId))
     } catch (err) {
       toast.error('Failed to remove favourite')
     }
   }
 
-  if (loading) return <div className="p-8 text-center mt-20">Loading...</div>
+  const favouriteList = Array.isArray(favourites) ? favourites : []
 
   return (
-    <div className="max-w-6xl mx-auto p-4 mt-20 font-primary">
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">My Favourite Operators</h1>
-
-      {favourites.length === 0 ? (
-        <div className="bg-white p-8 rounded-2xl shadow-sm text-center border border-slate-100">
-          <p className="text-slate-500 mb-4">You haven't saved any operators yet.</p>
-          <Link to="/operators" className="text-primary font-bold hover:underline">
-            Explore Operators
-          </Link>
+    <section className="min-h-screen bg-slate-50/50 py-10 font-secondary pb-24">
+      <div className="mx-auto max-w-4xl px-4">
+        <div className="mb-6">
+          <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-primary font-primary">Saved Operators</p>
+          <h1 className="text-2xl font-bold text-slate-900 font-primary mt-1">My Favourite Operators</h1>
+          <p className="text-xs text-slate-500 mt-1">Operators you saved for faster booking.</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {favourites.map(item => {
-            const op = item.operator
-            if (!op) return null
-            const opId = op.accountId
-            
-            return (
-              <div key={item.favouriteId} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col gap-4">
-                <div className="flex items-center gap-4">
-                  {op.profilePicture ? (
-                    <img src={op.profilePicture} alt={op.operatorName} className="w-16 h-16 rounded-full object-cover border border-slate-100" />
-                  ) : (
-                    <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xl">
-                      {op.operatorName.charAt(0)}
+
+        {loading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="h-32 animate-pulse rounded-2xl border border-slate-100 bg-white shadow-xs" />
+            ))}
+          </div>
+        ) : favouriteList.length === 0 ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
+            <h3 className="font-extrabold text-slate-700 text-sm font-primary">No favourite operators</h3>
+            <p className="text-xs text-slate-400 mt-1">Save an operator and it will appear here.</p>
+            <Link to="/operators" className="mt-6 inline-flex rounded-xl btn-premium-gradient px-6 py-3 text-xs font-primary">
+              Explore Operators
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {favouriteList.map((item) => {
+              const op = item.partner?.information
+              const account = item.partner?.account
+              const opId = item.partnerId
+
+              return (
+                <div key={item.favouriteId || item._id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-center gap-4 min-w-0">
+                      {op?.profilePicture ? (
+                        <img src={op.profilePicture} alt={op.operatorName} className="h-16 w-16 rounded-xl object-cover border border-slate-200" />
+                      ) : (
+                        <div className="h-16 w-16 rounded-xl bg-primary text-white flex items-center justify-center text-xl font-black">
+                          {op?.operatorName?.charAt(0) || 'O'}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="font-black text-slate-900 font-primary truncate">{op?.operatorName || account?.fullName || 'Operator'}</h3>
+                        <p className="text-xs text-slate-500 font-semibold truncate">{account?.email || 'No email provided'}</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          Rating: <span className="font-bold text-slate-700">{op?.ratingAvg ? op.ratingAvg.toFixed(1) : 'New'}</span>
+                        </p>
+                      </div>
                     </div>
-                  )}
-                  <div>
-                    <h3 className="font-bold text-lg text-slate-800">{op.operatorName}</h3>
-                    <div className="text-sm text-slate-500 flex items-center gap-1">
-                      <span className="text-yellow-400">★</span>
-                      <span>{op.ratingAvg ? op.ratingAvg.toFixed(1) : 'New'}</span>
-                      {op.totalReviews !== undefined && <span className="text-xs">({op.totalReviews} reviews)</span>}
+
+                    <div className="flex gap-2">
+                      <Link to={`/operators/${opId}`} className="rounded-xl bg-primary px-4 py-2.5 text-center text-xs font-bold text-white hover:bg-blue-600">
+                        View Details
+                      </Link>
+                      <button onClick={() => handleRemove(opId)} className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 hover:bg-rose-100 cursor-pointer">
+                        Remove
+                      </button>
                     </div>
                   </div>
                 </div>
-
-                <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-100">
-                  <Link 
-                    to={`/operators/${opId}`}
-                    className="text-sm font-bold text-primary hover:underline"
-                  >
-                    View Details
-                  </Link>
-                  <button 
-                    onClick={() => handleRemove(opId as string)}
-                    className="text-sm font-bold text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </section>
   )
 }
 
