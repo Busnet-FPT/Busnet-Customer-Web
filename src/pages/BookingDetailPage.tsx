@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { getBookingDetail, cancelBooking, downloadTicketPdf } from '../services/bookingService'
+import axios from 'axios'
+import { getBookingDetail, cancelBooking, requestCancelBooking, downloadTicketPdf } from '../services/bookingService'
 import type { BookingInfo } from '../types/booking'
 import type { TripItem } from '../types/booking'
 import { toast } from 'react-hot-toast'
+import { getFeedbacks } from '../services/feedbackService'
+import SubmitFeedbackModal from '../components/SubmitFeedbackModal'
 
 function formatCurrency(value: number) {
   return value.toLocaleString('vi-VN', {
@@ -21,38 +24,88 @@ function formatDate(value: string) {
   })
 }
 
+type BookingSeatView = {
+  seatCode: string
+}
+
+type PopulatedTrip = TripItem & {
+  routeId?: {
+    routeName?: string
+  }
+  busId?: {
+    busName?: string
+    licensePlate?: string
+  }
+}
+
+type PopulatedBooking = BookingInfo & {
+  tripId?: TripItem
+  partnerId?: {
+    fullName?: string
+  }
+}
+
 function BookingDetailPage() {
   const { bookingCode } = useParams<{ bookingCode: string }>()
   const navigate = useNavigate()
 
   const [booking, setBooking] = useState<BookingInfo | null>(null)
   const [trip, setTrip] = useState<TripItem | null>(null)
-  const [seats, setSeats] = useState<any[]>([])
+  const [seats, setSeats] = useState<BookingSeatView[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cancelling, setCancelling] = useState(false)
   const [downloading, setDownloading] = useState(false)
+  const [hasFeedback, setHasFeedback] = useState(false)
+  const [checkingFeedback, setCheckingFeedback] = useState(false)
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [showCancelRequestModal, setShowCancelRequestModal] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!bookingCode) return
     setLoading(true)
     setError('')
     try {
       const response = await getBookingDetail(bookingCode)
-      setBooking(response.data.booking)
-      setTrip(response.data.trip || (response.data.booking as any).tripId || null)
+      const loadedBooking = response.data.booking
+      const populatedBooking = loadedBooking as PopulatedBooking
+      setBooking(loadedBooking)
+      setTrip(response.data.trip || populatedBooking.tripId || null)
       setSeats(response.data.seats || [])
+
+      setCheckingFeedback(true)
+      try {
+        const feedbackResponse = await getFeedbacks()
+        const feedbacks = feedbackResponse.data.data.feedbacks || []
+        const loadedBookingId = loadedBooking._id || loadedBooking.id
+        const reviewed = feedbacks.some((feedback) => {
+          const feedbackBooking = feedback.bookingId
+          return (
+            feedbackBooking?._id === loadedBookingId ||
+            feedbackBooking?.bookingCode === loadedBooking.bookingCode
+          )
+        })
+        setHasFeedback(reviewed)
+      } catch (feedbackErr) {
+        console.error('Unable to check feedback status', feedbackErr)
+        setHasFeedback(false)
+      } finally {
+        setCheckingFeedback(false)
+      }
     } catch (err) {
       console.error(err)
       setError('Unable to load booking details.')
     } finally {
       setLoading(false)
     }
-  }
+  }, [bookingCode])
 
   useEffect(() => {
-    loadData()
-  }, [bookingCode])
+    queueMicrotask(() => {
+      void loadData()
+    })
+  }, [loadData])
 
   const handleCancelBooking = async () => {
     if (!bookingCode) return
@@ -67,7 +120,36 @@ function BookingDetailPage() {
       loadData() // refresh
     } catch (err) {
       console.error(err)
-      toast.error('Failed to cancel booking.', { id: cancelToast })
+      const message = axios.isAxiosError(err)
+        ? err.response?.data?.message || 'Failed to cancel booking.'
+        : 'Failed to cancel booking.'
+      toast.error(message, { id: cancelToast })
+    } finally {
+      setCancelling(false)
+    }
+  }
+
+  const handleRequestCancelBooking = async () => {
+    if (!bookingCode) return
+    if (!cancelReason.trim()) {
+      toast.error('Cancellation reason is required.')
+      return
+    }
+
+    setCancelling(true)
+    const cancelToast = toast.loading('Submitting cancellation request...')
+    try {
+      const response = await requestCancelBooking(bookingCode, cancelReason.trim())
+      toast.success(response.data?.message || response.message || 'Cancellation request submitted successfully!', { id: cancelToast })
+      setShowCancelRequestModal(false)
+      setCancelReason('')
+      loadData()
+    } catch (err) {
+      console.error(err)
+      const message = axios.isAxiosError(err)
+        ? err.response?.data?.message || 'Failed to submit cancellation request.'
+        : 'Failed to submit cancellation request.'
+      toast.error(message, { id: cancelToast })
     } finally {
       setCancelling(false)
     }
@@ -123,10 +205,15 @@ function BookingDetailPage() {
     )
   }
 
-  const isPending = booking.paymentStatus === 'PENDING' && booking.status !== 'CANCELLED_BY_CUSTOMER' && booking.status !== 'CANCELLED_BY_OPERATOR'
-  const isPaid = booking.paymentStatus === 'PAID' || booking.paymentStatus === 'SUCCESS' || booking.status === 'CONFIRMED' || booking.status === 'COMPLETED'
-  const isCancelled = booking.status === 'CANCELLED_BY_CUSTOMER' || booking.status === 'CANCELLED_BY_OPERATOR' || booking.paymentStatus === 'CANCELLED'
-  const isExpired = booking.paymentStatus === 'EXPIRED'
+  const paymentStatus = booking.paymentStatus || booking.payment_status
+  const isPending = paymentStatus === 'PENDING' && booking.status !== 'CANCELLED_BY_CUSTOMER' && booking.status !== 'CANCELLED_BY_OPERATOR'
+  const isPaid = paymentStatus === 'PAID' || paymentStatus === 'SUCCESS' || booking.status === 'CONFIRMED' || booking.status === 'COMPLETED' || booking.status === 'CANCEL_REQUESTED'
+  const isCancelled = booking.status === 'CANCELLED_BY_CUSTOMER' || booking.status === 'CANCELLED_BY_OPERATOR' || paymentStatus === 'CANCELLED'
+  const isExpired = paymentStatus === 'EXPIRED'
+  const canRequestCancel = booking.status === 'CONFIRMED' && (paymentStatus === 'PAID' || paymentStatus === 'SUCCESS')
+  const canWriteFeedback = booking.status === 'COMPLETED' && !hasFeedback
+  const populatedTrip = trip as PopulatedTrip
+  const populatedBooking = booking as PopulatedBooking
 
   return (
     <section className="min-h-screen bg-slate-50/50 py-10 font-secondary pb-24">
@@ -136,7 +223,7 @@ function BookingDetailPage() {
           onClick={() => navigate('/my-bookings')}
           className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-primary font-bold transition-all uppercase tracking-wider mb-6 cursor-pointer"
         >
-          🡨 Back to Booking History
+          Back to Booking History
         </button>
 
         {/* Header summary */}
@@ -144,7 +231,7 @@ function BookingDetailPage() {
           <div>
             <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-primary">Booking Code</span>
             <h1 className="text-2xl font-black text-slate-800 font-primary mt-0.5 tracking-tight">{bookingCode}</h1>
-            <p className="text-xs text-slate-500 font-semibold mt-1">Booked at: {booking.confirmedAt ? new Date(booking.confirmedAt).toLocaleString('en-US') : '—'}</p>
+            <p className="text-xs text-slate-500 font-semibold mt-1">Booked at: {booking.confirmedAt ? new Date(booking.confirmedAt).toLocaleString('en-US') : '-'}</p>
           </div>
           <div className="flex flex-wrap gap-2 text-[10px] font-extrabold uppercase tracking-wide">
             <span className={`px-3 py-1.5 rounded-xl border ${
@@ -154,7 +241,7 @@ function BookingDetailPage() {
                   ? 'bg-rose-50 text-rose-600 border-rose-100'
                   : 'bg-amber-50 text-amber-600 border-amber-100'
             }`}>
-              Ticket: {booking.status === 'CONFIRMED' ? 'Confirmed' : booking.status === 'COMPLETED' ? 'Completed' : booking.status === 'PENDING_PAYMENT' ? 'Pending Payment' : booking.status}
+              Ticket: {booking.status === 'CONFIRMED' ? 'Confirmed' : booking.status === 'CANCEL_REQUESTED' ? 'Cancellation Requested' : booking.status === 'COMPLETED' ? 'Completed' : booking.status === 'PENDING_PAYMENT' ? 'Pending Payment' : booking.status}
             </span>
           </div>
         </div>
@@ -169,19 +256,19 @@ function BookingDetailPage() {
               <div className="space-y-3 text-xs font-semibold text-slate-600">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Route:</span>
-                  <span className="text-slate-800 font-bold text-right">{(trip as any)?.routeId?.routeName || trip.route?.routeName || 'Unnamed Route'}</span>
+                  <span className="text-slate-800 font-bold text-right">{populatedTrip.routeId?.routeName || trip.route?.routeName || 'Unnamed Route'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Operator:</span>
-                  <span className="text-slate-800 font-bold text-right">{(booking as any)?.partnerId?.fullName || trip.operator?.operatorName || 'BusNet Operator'}</span>
+                  <span className="text-slate-800 font-bold text-right">{populatedBooking.partnerId?.fullName || trip.operator?.operatorName || 'BusNet Operator'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Bus Type:</span>
-                  <span className="text-slate-800 font-bold text-right">{(trip as any)?.busId?.busName || trip.bus?.busName} ({(trip as any)?.busId?.licensePlate || trip.bus?.licensePlate})</span>
+                  <span className="text-slate-800 font-bold text-right">{populatedTrip.busId?.busName || trip.bus?.busName} ({populatedTrip.busId?.licensePlate || trip.bus?.licensePlate})</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Departure Time:</span>
-                  <span className="text-slate-800 font-bold text-right">{trip.departureTime || ((trip as any)?.actualDepartureTime != null ? new Date((trip as any)?.actualDepartureTime * 60000).toISOString().substring(11, 16) : 'N/A')} • {formatDate(trip.departureDate)}</span>
+                  <span className="text-slate-800 font-bold text-right">{trip.departureTime || (trip.actualDepartureTime != null ? new Date(trip.actualDepartureTime * 60000).toISOString().substring(11, 16) : 'N/A')} - {formatDate(trip.departureDate)}</span>
                 </div>
                 <div className="flex justify-between border-t border-slate-100 pt-3 text-slate-850 font-bold text-[13px]">
                   <span>Reserved Seats:</span>
@@ -196,15 +283,15 @@ function BookingDetailPage() {
               <div className="space-y-3 text-xs font-semibold text-slate-600">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Name:</span>
-                  <span className="text-slate-800 font-bold">{booking.passengerName || '—'}</span>
+                  <span className="text-slate-800 font-bold">{booking.passengerName || '-'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Phone:</span>
-                  <span className="text-slate-800 font-bold">{booking.passengerPhone || '—'}</span>
+                  <span className="text-slate-800 font-bold">{booking.passengerPhone || '-'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Email:</span>
-                  <span className="text-slate-800 font-bold">{booking.passengerEmail || '—'}</span>
+                  <span className="text-slate-800 font-bold">{booking.passengerEmail || '-'}</span>
                 </div>
                 {booking.customerNote && (
                   <div className="border-t border-slate-100 pt-3">
@@ -219,7 +306,7 @@ function BookingDetailPage() {
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xs grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Pickup point */}
               <div className="space-y-2">
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-primary border-b border-slate-100 pb-2">📍 Pickup Point</span>
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-primary border-b border-slate-100 pb-2">Pickup Point</span>
                 <p className="text-xs font-bold text-slate-800">{booking.pickupPoint_name || 'Default Pickup Point'}</p>
                 <p className="text-[11px] text-slate-500 font-semibold">{booking.pickupPoint_address || trip.route?.origin_representativeAddress}</p>
                 <p className="text-[11px] text-slate-800 font-bold">Time: {booking.pickupPoint_time || trip.departureTime}</p>
@@ -227,7 +314,7 @@ function BookingDetailPage() {
 
               {/* Dropoff point */}
               <div className="space-y-2">
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-primary border-b border-slate-100 pb-2">📍 Dropoff Point</span>
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block font-primary border-b border-slate-100 pb-2">Dropoff Point</span>
                 <p className="text-xs font-bold text-slate-800">{booking.dropoffPoint_name || 'Default Dropoff Point'}</p>
                 <p className="text-[11px] text-slate-500 font-semibold">{booking.dropoffPoint_address || trip.route?.destination_representativeAddress}</p>
                 <p className="text-[11px] text-slate-800 font-bold">Time: {booking.dropoffPoint_time || trip.arrivalTime}</p>
@@ -317,6 +404,30 @@ function BookingDetailPage() {
                       >
                         {downloading ? 'Downloading PDF...' : 'Download PDF Ticket'}
                       </button>
+                      {canRequestCancel && (
+                        <button
+                          onClick={() => setShowCancelRequestModal(true)}
+                          disabled={cancelling}
+                          className="w-full rounded-2xl border border-rose-200 hover:bg-rose-50 text-rose-600 py-3 text-xs font-bold active:scale-98 transition-all cursor-pointer disabled:opacity-50"
+                        >
+                          {cancelling ? 'Processing...' : 'Request Cancel'}
+                        </button>
+                      )}
+                      {booking.status === 'COMPLETED' && (
+                        hasFeedback ? (
+                          <div className="w-full rounded-2xl border border-emerald-100 bg-emerald-50 py-3 text-center text-xs font-bold text-emerald-600">
+                            Review submitted
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setShowFeedbackModal(true)}
+                            disabled={checkingFeedback}
+                            className="w-full rounded-2xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 py-3 text-xs font-bold active:scale-98 transition-all cursor-pointer disabled:opacity-50"
+                          >
+                            {checkingFeedback ? 'Checking Review...' : 'Write Review'}
+                          </button>
+                        )
+                      )}
                     </>
                   )}
                   {!isPending && !isPaid && (
@@ -330,8 +441,77 @@ function BookingDetailPage() {
           </div>
         </div>
       </div>
+
+      {showFeedbackModal && canWriteFeedback && (
+        <SubmitFeedbackModal
+          isOpen={true}
+          bookingId={booking.id || booking._id || ''}
+          operatorName={populatedBooking.partnerId?.fullName || trip.operator?.operatorName || 'Operator'}
+          onClose={() => setShowFeedbackModal(false)}
+          onSuccess={() => {
+            setHasFeedback(true)
+            setShowFeedbackModal(false)
+          }}
+        />
+      )}
+
+      {showCancelRequestModal && canRequestCancel && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="mb-5">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.24em] text-rose-500 font-primary">Cancellation Request</p>
+              <h3 className="mt-1 text-lg font-black text-slate-900 font-primary">Request ticket cancellation</h3>
+            </div>
+
+            <div className="rounded-2xl border border-slate-100 bg-slate-50/70 p-4 text-xs font-semibold text-slate-500">
+              <div className="flex justify-between gap-4">
+                <span>Booking code</span>
+                <span className="font-black text-slate-800">{booking.bookingCode}</span>
+              </div>
+            </div>
+
+            <label className="mt-5 block">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 font-primary">Reason</span>
+              <textarea
+                value={cancelReason}
+                onChange={(event) => setCancelReason(event.target.value)}
+                rows={4}
+                maxLength={300}
+                className="mt-2 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-rose-300 focus:bg-white focus:ring-4 focus:ring-rose-100"
+                placeholder="Tell us why you need to cancel this ticket..."
+                autoFocus
+              />
+              <span className="mt-1 block text-right text-[10px] font-bold text-slate-400">{cancelReason.length}/300</span>
+            </label>
+
+            <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  if (cancelling) return
+                  setShowCancelRequestModal(false)
+                  setCancelReason('')
+                }}
+                disabled={cancelling}
+                className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold text-slate-600 transition hover:bg-slate-50 disabled:opacity-60"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={handleRequestCancelBooking}
+                disabled={cancelling || !cancelReason.trim()}
+                className="rounded-2xl bg-rose-600 px-5 py-3 text-xs font-bold text-white transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {cancelling ? 'Submitting...' : 'Submit Request'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
 
 export default BookingDetailPage
+

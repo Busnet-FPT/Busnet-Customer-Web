@@ -55,7 +55,7 @@ export const getProfile = async (): Promise<ProfileResponse> => {
  * PATCH /api/customer/profile/me
  */
 export const updateProfile = async (data: UpdateProfileData): Promise<ProfileResponse> => {
-  if (data.profilePicture instanceof File) {
+  if (data.profilePicture) {
     const formData = new FormData()
     if (data.fullName) formData.append('fullName', data.fullName)
     if (data.phone) formData.append('phone', data.phone)
@@ -63,23 +63,12 @@ export const updateProfile = async (data: UpdateProfileData): Promise<ProfileRes
     if (data.dob !== undefined) formData.append('dob', data.dob || '')
     formData.append('profilePicture', data.profilePicture)
     
-    const token = localStorage.getItem('token')
-    const response = await fetch(api.defaults.baseURL + '/customer/profile/me', {
-      method: 'PATCH',
+    const response = await api.patch<ProfileResponse>('/customer/profile/me', formData, {
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'multipart/form-data',
       },
-      body: formData
     })
-    const responseData = await response.json()
-    if (!response.ok) {
-      // Mock an AxiosError to keep compatibility with ProfilePage catch block
-      const err = new Error(responseData.message || 'Request failed') as any
-      err.isAxiosError = true
-      err.response = { data: responseData }
-      throw err
-    }
-    return responseData
+    return response.data
   }
 
   const response = await api.patch<ProfileResponse>('/customer/profile/me', data)

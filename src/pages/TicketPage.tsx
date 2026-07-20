@@ -68,7 +68,7 @@ function TicketPage() {
 
         // If tickets array is empty, reconstruct from booking detail seats list
         if (loadedTickets.length === 0 && detailRes.data.seats) {
-          loadedTickets = detailRes.data.seats.map((seat, index) => ({
+          loadedTickets = detailRes.data.seats.map((seat: any, index: number) => ({
             ticketId: seat.ticketId || `${bookingData!.id || bookingData!._id || ''}-${index}`,
             ticketCode: seat.ticketId || `${bookingData!.bookingCode}-${seat.seatCode}`,
             bookingId: bookingData!.id || bookingData!._id || '',
@@ -251,8 +251,8 @@ function TicketPage() {
                 {/* Real QR Code API */}
                 <div className="p-2 bg-white border border-slate-200 rounded-xl flex flex-col items-center gap-1.5 shadow-inner">
                   <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(ticket.ticketCode)}&margin=1`} 
-                    alt={`QR Code for ${ticket.ticketCode}`}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(ticket.ticketCode || '')}&margin=1`} 
+                    alt={`QR Code for ${ticket.ticketCode || ''}`}
                     className="w-20 h-20 object-contain mix-blend-multiply pointer-events-none"
                     loading="lazy"
                   />
