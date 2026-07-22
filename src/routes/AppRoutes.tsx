@@ -117,7 +117,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'subscription',
-        element: <SuspenseWrapper><RequireAuth><SubscriptionPage /></RequireAuth></SuspenseWrapper>
+        element: <SuspenseWrapper><SubscriptionPage /></SuspenseWrapper>
       },
       {
         path: 'operators',
