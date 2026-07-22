@@ -1,12 +1,41 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import CustomerLayout from '../layouts/CustomerLayout'
-import HomePage from '../pages/HomePage'
-import LoginPage from '../pages/LoginPage'
-import RegisterPage from '../pages/RegisterPage'
-import TripsPage from '../pages/TripsPage'
-import BookingPage from '../pages/BookingPage'
-import ProfilePage from '../pages/ProfilePage'
-import NotFoundPage from '../pages/NotFoundPage'
+import RequireAuth from '../guards/RequireAuth'
+
+const HomePage = lazy(() => import('../pages/home-page/HomePage'))
+const LoginPage = lazy(() => import('../pages/login-page/LoginPage'))
+const ForgotPasswordPage = lazy(() => import('../pages/forgot-password-page/ForgotPasswordPage'))
+const RegisterPage = lazy(() => import('../pages/register-page/RegisterPage'))
+const RegisterPassengerPage = lazy(() => import('../pages/register-page/RegisterPassengerPage'))
+const RegisterOperatorPage = lazy(() => import('../pages/register-page/register-operator-page/RegisterOperatorPage'))
+const TripsPage = lazy(() => import('../pages/TripsPage'))
+const BookingPage = lazy(() => import('../pages/BookingPage'))
+const PaymentPage = lazy(() => import('../pages/PaymentPage'))
+const TicketPage = lazy(() => import('../pages/TicketPage'))
+const MyBookingsPage = lazy(() => import('../pages/MyBookingsPage'))
+const BookingDetailPage = lazy(() => import('../pages/BookingDetailPage'))
+const ProfilePage = lazy(() => import('../pages/ProfilePage'))
+const NotFoundPage = lazy(() => import('../pages/NotFoundPage'))
+const SubscriptionPage = lazy(() => import('../pages/subscription-page/SubscriptionPage'))
+const BlogPage = lazy(() => import('../pages/blog-page/BlogPage'))
+const BlogDetailPage = lazy(() => import('../pages/blog-page/blog-detail-page/BlogDetailPage'))
+const OperatorListPage = lazy(() => import('../pages/operator-page/OperatorListPage'))
+const OperatorDetailPage = lazy(() => import('../pages/operator-page/OperatorDetailPage'))
+const VerifyEmailPage = lazy(() => import('../pages/verify-page/VerifyEmailPage'))
+
+// New Features Routes
+const MyFavouritesPage = lazy(() => import('../pages/MyFavouritesPage'))
+const MyReportsPage = lazy(() => import('../pages/MyReportsPage'))
+const MyFeedbacksPage = lazy(() => import('../pages/MyFeedbacksPage'))
+const LookupPage = lazy(() => import('../pages/LookupPage'))
+
+const SuspenseWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>}>
+    {children}
+  </Suspense>
+)
+
 
 export const router = createBrowserRouter([
   {
@@ -15,32 +44,105 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: <SuspenseWrapper><HomePage /></SuspenseWrapper>,
       },
       {
         path: 'login',
-        element: <LoginPage />,
+        element: <SuspenseWrapper><LoginPage /></SuspenseWrapper>,
+      },
+      {
+        path: 'forgot-password',
+        element: <SuspenseWrapper><ForgotPasswordPage /></SuspenseWrapper>,
+      },
+      {
+        path: 'verify-email',
+        element: <SuspenseWrapper><VerifyEmailPage /></SuspenseWrapper>,
       },
       {
         path: 'register',
-        element: <RegisterPage />,
+        children: [
+          {
+            index: true,
+            element: <SuspenseWrapper><RegisterPage /></SuspenseWrapper>,
+          },
+          {
+            path: 'passenger',
+            element: <SuspenseWrapper><RegisterPassengerPage /></SuspenseWrapper>,
+          },
+          {
+            path: 'operator',
+            element: <SuspenseWrapper><RegisterOperatorPage /></SuspenseWrapper>,
+          },
+        ],
       },
       {
         path: 'trips',
-        element: <TripsPage />,
+        element: <SuspenseWrapper><TripsPage /></SuspenseWrapper>,
       },
       {
         path: 'booking',
-        element: <BookingPage />,
+        element: <SuspenseWrapper><RequireAuth><BookingPage /></RequireAuth></SuspenseWrapper>,
+      },
+      {
+        path: 'payment/:bookingCode',
+        element: <SuspenseWrapper><RequireAuth><PaymentPage /></RequireAuth></SuspenseWrapper>,
+      },
+      {
+        path: 'tickets/:bookingCode',
+        element: <SuspenseWrapper><RequireAuth><TicketPage /></RequireAuth></SuspenseWrapper>,
+      },
+      {
+        path: 'my-bookings',
+        element: <SuspenseWrapper><RequireAuth><MyBookingsPage /></RequireAuth></SuspenseWrapper>,
+      },
+      {
+        path: 'my-bookings/:bookingCode',
+        element: <SuspenseWrapper><RequireAuth><BookingDetailPage /></RequireAuth></SuspenseWrapper>,
       },
       {
         path: 'profile',
-        element: <ProfilePage />,
+        element: <SuspenseWrapper><RequireAuth><ProfilePage /></RequireAuth></SuspenseWrapper>,
       },
+      {
+        path: 'my-favourites',
+        element: <SuspenseWrapper><RequireAuth><MyFavouritesPage /></RequireAuth></SuspenseWrapper>,
+      },
+      {
+        path: 'my-reports',
+        element: <SuspenseWrapper><RequireAuth><MyReportsPage /></RequireAuth></SuspenseWrapper>,
+      },
+      {
+        path: 'my-feedbacks',
+        element: <SuspenseWrapper><RequireAuth><MyFeedbacksPage /></RequireAuth></SuspenseWrapper>,
+      },
+      {
+        path: 'subscription',
+        element: <SuspenseWrapper><SubscriptionPage /></SuspenseWrapper>
+      },
+      {
+        path: 'operators',
+        element: <SuspenseWrapper><OperatorListPage /></SuspenseWrapper>
+      },
+      {
+        path: 'operators/:id',
+        element: <SuspenseWrapper><OperatorDetailPage /></SuspenseWrapper>
+      },
+      {
+        path: 'blog',
+        element: <SuspenseWrapper><BlogPage /></SuspenseWrapper>
+      },
+      {
+        path: 'blog/:id',
+        element: <SuspenseWrapper><BlogDetailPage /></SuspenseWrapper>
+      },
+      {
+        path: 'lookup',
+        element: <SuspenseWrapper><LookupPage /></SuspenseWrapper>
+      }
     ],
   },
   {
     path: '*',
-    element: <NotFoundPage />,
+    element: <SuspenseWrapper><NotFoundPage /></SuspenseWrapper>,
   },
 ])
